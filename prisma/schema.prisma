@@ -1,0 +1,242 @@
+// Prisma schema for Germany Daily
+// Docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum SourceType {
+  RSS
+  API
+  SCRAPER
+}
+
+enum Category {
+  POLITICS
+  ECONOMY
+  IMMIGRATION
+  BERLIN
+  TECHNOLOGY
+  EUROPE
+  BUSINESS
+  SOCIETY
+  SPORTS
+}
+
+enum Channel {
+  EMAIL
+  TELEGRAM
+  WHATSAPP
+  WEB
+}
+
+enum SubscriptionPlan {
+  FREE
+  PRO
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  TRIALING
+}
+
+enum PipelineStatus {
+  RUNNING
+  SUCCESS
+  PARTIAL_FAILURE
+  FAILED
+}
+
+model User {
+  id        String   @id @default(cuid())
+  clerkId   String   @unique
+  email     String   @unique
+  name      String?
+  isAdmin   Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  preference   UserPreference?
+  subscription Subscription?
+  channels     NotificationChannel[]
+  deliveries   DigestDelivery[]
+  auditLogs    AdminAuditLog[]
+}
+
+model UserPreference {
+  id                 String     @id @default(cuid())
+  userId             String     @unique
+  user               User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  favoriteCategories Category[]
+  digestHour         Int        @default(7)
+  timezone           String     @default("Europe/Berlin")
+  paused             Boolean    @default(false)
+  updatedAt          DateTime   @updatedAt
+}
+
+model Subscription {
+  id                   String             @id @default(cuid())
+  userId               String             @unique
+  user                 User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stripeCustomerId     String?            @unique
+  stripeSubscriptionId String?            @unique
+  plan                 SubscriptionPlan   @default(FREE)
+  status               SubscriptionStatus @default(ACTIVE)
+  currentPeriodEnd     DateTime?
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+}
+
+model NotificationChannel {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  channel   Channel
+  address   String
+  verified  Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, channel])
+}
+
+model Source {
+  id           String   @id @default(cuid())
+  name         String
+  url          String   @unique
+  type         SourceType
+  category     Category?
+  trustScore   Int      @default(50)
+  active       Boolean  @default(true)
+  scrapeConfig Json?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  rawArticles RawArticle[]
+  scrapeLogs  ScrapeLog[]
+}
+
+model RawArticle {
+  id          String    @id @default(cuid())
+  sourceId    String
+  source      Source    @relation(fields: [sourceId], references: [id])
+  externalId  String?
+  url         String
+  title       String
+  rawContent  String
+  publishedAt DateTime?
+  fetchedAt   DateTime  @default(now())
+  embedding   Float[]
+
+  storyId String?
+  story   Story? @relation(fields: [storyId], references: [id])
+
+  @@unique([sourceId, externalId])
+  @@index([publishedAt])
+}
+
+model Story {
+  id              String   @id @default(cuid())
+  pipelineRunId   String?
+  pipelineRun     PipelineRun? @relation(fields: [pipelineRunId], references: [id])
+  category        Category
+  importanceScore Float    @default(0)
+  firstSeenAt     DateTime @default(now())
+  createdAt       DateTime @default(now())
+
+  rawArticles RawArticle[]
+  summaries   Summary[]
+  digestItems DigestItem[]
+}
+
+model Summary {
+  id            String   @id @default(cuid())
+  storyId       String
+  story         Story    @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  headline      String
+  body          String
+  whyItMatters  String
+  tags          String[]
+  aiProvider    String
+  aiModel       String
+  version       Int      @default(1)
+  editedByAdmin Boolean  @default(false)
+  editedById    String?
+  createdAt     DateTime @default(now())
+
+  @@index([storyId, version])
+}
+
+model Digest {
+  id        String   @id @default(cuid())
+  date      DateTime @unique @db.Date
+  createdAt DateTime @default(now())
+
+  items      DigestItem[]
+  deliveries DigestDelivery[]
+}
+
+model DigestItem {
+  id       String @id @default(cuid())
+  digestId String
+  digest   Digest @relation(fields: [digestId], references: [id], onDelete: Cascade)
+  storyId  String
+  story    Story  @relation(fields: [storyId], references: [id])
+  rank     Int
+
+  @@unique([digestId, storyId])
+}
+
+model DigestDelivery {
+  id       String    @id @default(cuid())
+  digestId String
+  digest   Digest    @relation(fields: [digestId], references: [id])
+  userId   String
+  user     User      @relation(fields: [userId], references: [id])
+  channel  Channel
+  status   String
+  error    String?
+  sentAt   DateTime?
+  createdAt DateTime @default(now())
+
+  @@unique([digestId, userId, channel])
+}
+
+model PipelineRun {
+  id         String         @id @default(cuid())
+  startedAt  DateTime       @default(now())
+  finishedAt DateTime?
+  status     PipelineStatus @default(RUNNING)
+  stats      Json?
+
+  scrapeLogs ScrapeLog[]
+  stories    Story[]
+}
+
+model ScrapeLog {
+  id            String      @id @default(cuid())
+  pipelineRunId String
+  pipelineRun   PipelineRun @relation(fields: [pipelineRunId], references: [id])
+  sourceId      String
+  source        Source      @relation(fields: [sourceId], references: [id])
+  success       Boolean
+  articleCount  Int         @default(0)
+  error         String?
+  createdAt     DateTime    @default(now())
+}
+
+model AdminAuditLog {
+  id        String   @id @default(cuid())
+  adminId   String
+  admin     User     @relation(fields: [adminId], references: [id])
+  action    String
+  targetId  String?
+  metadata  Json?
+  createdAt DateTime @default(now())
+}
