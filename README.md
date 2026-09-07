@@ -1,8 +1,8 @@
 # Bülten Almanya
 
-Every morning, subscribers get a high-quality **Turkish** summary of the most important German news — not a translation, but a ranked, deduplicated, explained digest.
+Every morning, subscribers get a high-quality **Turkish** **English** summary of the most important German news  not a translation, but a ranked, deduplicated, explained digest.
 
-Built for Turkish speakers living in or following Germany: expats, professionals tracking the German economy, and anyone who wants "what happened in Germany yesterday and why it matters" in five minutes.
+Built for Turkish and English speakers living in or following Germany: expats, professionals tracking the German economy, and anyone who wants "what happened in Germany yesterday and why it matters" in five minutes.
 
 ## Docs
 
