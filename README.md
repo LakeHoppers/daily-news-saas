@@ -1,4 +1,4 @@
-# Bülten Almanya
+# News Daily
 
 Every morning, subscribers get a high-quality **Turkish** **English** summary of the most important German news  not a translation, but a ranked, deduplicated, explained digest.
 
