@@ -188,7 +188,7 @@ build digest (Vercel Cron target, scheduled daily at 05:00 UTC in
   "cluster": { "embedded": 500, "attachedToExisting": 12, "newStories": 340 },
   "rank": { "ranked": 352 },
   "summarize": { "summarized": 340, "failed": 0 },
-  "digest": { "digestId": "string", "itemCount": 30 }
+  "digest": { "digestId": "string", "itemCount": 10 }
 }
 ```
 

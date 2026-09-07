@@ -30,18 +30,25 @@ Built for Turkish speakers living in or following Germany: expats, professionals
 ## Getting started
 
 ```bash
-npm install
+npm ci
+cp .env.example .env
 ```
 
-Copy `.env` and fill in real values for `DATABASE_URL` (Supabase), Clerk keys, Stripe keys, and an AI provider key.
+Fill in `.env` with development values for your PostgreSQL database, Clerk, Stripe, OpenAI, Resend, and cron secret. Obtain team credentials through a private secret-sharing channel. Never commit `.env` or paste credentials into issues or pull requests.
 
 ```bash
 npx prisma generate
-npx prisma migrate dev --name init
+npx prisma migrate deploy
 npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000).
+
+## Team workflow
+
+Clone the repository, then follow the setup steps above. Source code, docs, tests, public assets, database migrations, and the npm lockfile belong in Git. Dependencies, generated files, build output, and local credentials are excluded by `.gitignore`.
+
+Create a branch for each change and open a pull request into `main`. Before requesting review, run `npm test`, `npm run lint`, and `npm run typecheck`. Use a development database when working locally; migration commands modify the database selected by `DATABASE_URL`.
 
 ## Project structure
 

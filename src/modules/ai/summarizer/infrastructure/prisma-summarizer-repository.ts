@@ -6,7 +6,10 @@ export class PrismaSummarizerRepository implements SummarizerRepository {
   async getStoriesNeedingSummary(limit: number): Promise<StoryToSummarize[]> {
     const stories = await prisma.story.findMany({
       where: { summaries: { none: {} } },
-      orderBy: { createdAt: "asc" },
+      // Highest-importance first, not oldest-first: only the top few stories
+      // ever make the digest, so summarization budget should go to whatever
+      // is currently most likely to matter, not whatever's been waiting longest.
+      orderBy: { importanceScore: "desc" },
       take: limit,
       select: {
         id: true,

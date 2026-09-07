@@ -120,9 +120,13 @@
   permanently starved any story created by an earlier run that crashed
   before reaching the summarize stage. Changed to a global
   not-yet-summarized query instead.
-- Per-run cap is 200 stories (`DEFAULT_STORY_LIMIT`) — with ~487 already
-  backlogged from M2 testing, it'll take a few cron runs to fully catch up;
-  this is intentional (bounds cost/time per run) rather than a bug
+- ~~Per-run cap is 200 stories (`DEFAULT_STORY_LIMIT`)~~ — **superseded**: once
+  the digest was capped at 10 items (see below), summarizing 200
+  oldest-first stories per run was pure waste (slow, costly, and didn't even
+  prioritize what would make the digest). `DEFAULT_STORY_LIMIT` is now 15
+  (10 + a small failure buffer) and `getStoriesNeedingSummary` orders by
+  `importanceScore desc` instead of `createdAt asc`, so the pipeline only
+  ever does the summarization work the digest actually needs.
 - Only individual stages have been live-verified against real data so far
   (fetch+cluster+rank together in M2, summarize on its own in M3) — the
   actual `/api/cron/pipeline` route hasn't been run start-to-finish in one
@@ -145,7 +149,7 @@
 ## M4 — Digest + dashboard ✅
 - [x] `BuildDigestUseCase`: picks summarized, not-yet-used stories (article
       published within 48h) ranked by `importanceScore`, upserts the day's
-      `Digest`/`DigestItem` rows (capped at 30/day); wired as the 5th
+      `Digest`/`DigestItem` rows (capped at 10/day); wired as the 5th
       pipeline stage
 - [x] Public `GET /api/digests/latest`, `GET /api/digests/:date`,
       `GET /api/stories/:id`
@@ -178,7 +182,7 @@
   — a story published late in the Berlin evening could land in the next
   UTC day's digest. Noted as a simplification in M0/M2 already; revisit
   once per-user delivery timing (M5) makes the mismatch actually visible.
-- `MAX_DIGEST_ITEMS = 30` and the 48h freshness window are hardcoded
+- `MAX_DIGEST_ITEMS = 10` and the 48h freshness window are hardcoded
   constants, not configurable per environment yet.
 
 ## M5 — Email delivery ✅
@@ -321,7 +325,26 @@ Emre doesn't want Telegram integration. Do not build
   schema but have no working fetcher, so exposing them in the form would
   create sources that silently never get scraped.
 
+## Consistency fix (2026-09) — digest size + pipeline speed
+- [x] Digest capped at 10 items/day (`MAX_DIGEST_ITEMS`), was 30
+- [x] Summarization now targets exactly what the digest needs: capped at 15
+      stories/run (was 200) and ordered by `importanceScore desc` (was
+      oldest-first) — a run now does ~15 stories × 2 OpenAI calls instead of
+      up to 200 × 2, which is the actual reason runs were taking 15-30
+      minutes and felt unreliable
+- [ ] **Not yet actually automatic**: nothing is deployed. The
+      `vercel.json` cron schedules (`/api/cron/pipeline` daily,
+      `/api/cron/deliver` hourly) only fire once this app is deployed to
+      Vercel — every run so far (M1 through the Neon migration) has been
+      triggered manually, by hand, from this session. "Every day
+      automatically" requires deployment; see M9.
+
 ## M9 — Hardening & launch
+- [ ] **Deploy to Vercel** — hard prerequisite for the cron schedules in
+      `vercel.json` to run on their own. Needs: a git remote (GitHub, since
+      this repo has no remote yet — only local commits), a Vercel account,
+      and every `.env` var re-entered in the Vercel project's environment
+      variables (they don't carry over from a local `.env` automatically)
 - [ ] Test coverage pass across all modules
 - [ ] Sentry (or equivalent) error alerting
 - [ ] Rate limiting on public routes

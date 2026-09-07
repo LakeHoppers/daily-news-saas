@@ -2,7 +2,7 @@ import { startOfUtcDay } from "../domain/date";
 import type { DigestBuilderRepository } from "./ports";
 
 const CANDIDATE_WINDOW_HOURS = 48;
-const MAX_DIGEST_ITEMS = 30;
+const MAX_DIGEST_ITEMS = 10;
 
 export interface BuildDigestResult {
   digestId: string;

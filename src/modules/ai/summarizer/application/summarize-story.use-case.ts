@@ -2,7 +2,12 @@ import type { FactExtractor, Summarizer } from "@/shared/ai-provider.interface";
 import type { SummarizerRepository } from "./ports";
 
 const MAX_ARTICLE_CONTENT_CHARS = 2000;
-const DEFAULT_STORY_LIMIT = 200;
+// The digest only ever takes the top 10 stories by importance (see
+// MAX_DIGEST_ITEMS in build-digest.use-case.ts). Summarizing far more than
+// that per run is pure waste — slower, costlier, and it's what made runs
+// take 15-30 minutes. This is intentionally just a small buffer over 10 to
+// absorb a few failures, not a real backlog-clearing budget.
+const DEFAULT_STORY_LIMIT = 15;
 
 export interface SummarizeStoriesResult {
   summarized: number;
