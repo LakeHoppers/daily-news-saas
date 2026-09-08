@@ -18,7 +18,7 @@ function escapeHtml(text: string): string {
 
 /** Pure formatter: given a digest, produces the subject/HTML/plain-text for the delivery email. */
 export function buildDigestEmail(digest: DigestView): DigestEmailContent {
-  const subject = `Bülten Almanya — ${digest.date} özeti (${digest.items.length} haber)`;
+  const subject = `News Daily — ${digest.date} özeti (${digest.items.length} haber)`;
 
   const text = digest.items
     .map(
@@ -28,7 +28,7 @@ export function buildDigestEmail(digest: DigestView): DigestEmailContent {
     .join("\n\n---\n\n");
 
   const html = `<div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #111;">
-<h1 style="font-size: 20px;">Bülten Almanya — ${escapeHtml(digest.date)}</h1>
+<h1 style="font-size: 20px;">News Daily — ${escapeHtml(digest.date)}</h1>
 ${digest.items
   .map(
     (item) => `<div style="margin-bottom: 24px; padding-bottom: 24px; border-bottom: 1px solid #e5e5e5;">

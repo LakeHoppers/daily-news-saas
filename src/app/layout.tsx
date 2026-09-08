@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Bülten Almanya",
+  title: "News Daily",
   description: "Almanya'daki en önemli haberlerin günlük Türkçe özeti.",
 };
 

@@ -1,6 +1,6 @@
 # TODO
 
-> The service was renamed to **Bülten Almanya** after M3. Infra project
+> The service was renamed to **News Daily** after M3. Infra project
 > names/slugs created before the rename (the Supabase project, the npm
 > package's original folder) were not renamed to avoid unnecessary churn —
 > only user-facing branding and docs were updated. See M3.5 below.
@@ -137,7 +137,7 @@
   fails that one story for the run and moves on) — fine for now given
   `failed` is tracked and the story stays eligible for the next run
 
-## Rebrand: "Germany Daily" → "Bülten Almanya" ✅
+## Rebrand: "Germany Daily" → "News Daily" ✅
 - [x] User-facing name updated: page `<title>`/metadata, site header,
       homepage copy, README, ARCHITECTURE overview
 - [x] `package.json` name → `bulten-almanya`
@@ -424,3 +424,8 @@ idempotency remains separate hardening work).
 - [ ] Review phase 2–4 proposal before implementation; no other route ported yet.
 - [ ] Phase-2 writer follow-up: reruns accumulated 20 stored items in today's
       edition despite selection cap 10. Read-only slice intentionally preserves it.
+
+## Final product name — 2026-09-08
+The final product name is **News Daily**. UI, metadata, email templates, default
+sender display name, Python API title and documentation use this name. Turkish
+body copy is unchanged. Existing infrastructure/package identifiers stay stable.

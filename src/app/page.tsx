@@ -25,7 +25,7 @@ export default async function Home() {
           Almanya&apos;dan her sabah, Türkçe özet.
         </h1>
         <p className="max-w-xl text-muted-foreground">
-          Bülten Almanya; en önemli Alman haberlerini toplar, tekrarları
+          News Daily; en önemli Alman haberlerini toplar, tekrarları
           ayıklar, önem sırasına koyar ve akıcı Türkçe özetler halinde neden
           önemli olduğunu anlatır.
         </p>

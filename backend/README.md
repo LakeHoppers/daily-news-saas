@@ -1,4 +1,4 @@
-# Bülten Almanya Python read API
+# News Daily Python read API
 
 Phase 1 only: `GET /api/digests/latest`. See [migration decisions](../docs/PYTHON_MIGRATION.md).
 Python 3.12 required. From the repository root:

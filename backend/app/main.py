@@ -25,7 +25,7 @@ def create_app(repository: DigestRepository | None = None) -> FastAPI:
             if engine is not None:
                 engine.dispose()
 
-    app = FastAPI(title="Bülten Almanya read API", lifespan=lifespan)
+    app = FastAPI(title="News Daily read API", lifespan=lifespan)
     app.include_router(router)
 
     @app.exception_handler(SQLAlchemyError)

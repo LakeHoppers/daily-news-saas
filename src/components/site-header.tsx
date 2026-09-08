@@ -11,7 +11,7 @@ export async function SiteHeader() {
     <header className="border-b">
       <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4">
         <Link href="/" className="font-semibold tracking-tight">
-          Bülten Almanya
+          News Daily
         </Link>
         <div className="flex items-center gap-3">
           <Show when="signed-out">
