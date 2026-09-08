@@ -1,6 +1,8 @@
 # News Daily
 
-Every morning, subscribers get a high-quality **Turkish** **English** summary of the most important German news  not a translation, but a ranked, deduplicated, explained digest.
+**Live:** [daily-news-saas.vercel.app](https://daily-news-saas.vercel.app)
+
+Every morning, subscribers get a high-quality **Turkish** (and, as of the v1 English toggle, **English**) summary of the most important German news — not a translation, but a ranked, deduplicated, explained digest.
 
 Built for Turkish and English speakers living in or following Germany: expats, professionals tracking the German economy, and anyone who wants "what happened in Germany yesterday and why it matters" in five minutes.
 
@@ -77,6 +79,6 @@ npm run build    # generate Prisma Client + production build
 npm run lint     # eslint
 ```
 
-Deployment setup, runtime measurements and remaining activation steps: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
+Deployed to Vercel at [daily-news-saas.vercel.app](https://daily-news-saas.vercel.app) — daily pipeline via Vercel Cron, hourly delivery via GitHub Actions. Setup history and runtime measurements: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) (note: some of that doc's "pending activation" language predates the actual production deploy).
 
 Python migration phase 0–1: [decisions and verified slice](docs/PYTHON_MIGRATION.md), [backend setup](backend/README.md). The homepage opts into FastAPI with server-only `PYTHON_BACKEND_URL`; unset preserves the existing deployment.
