@@ -34,6 +34,23 @@ export interface FactExtractor {
   extractFacts(input: ExtractFactsInput): Promise<ExtractFactsOutput>;
 }
 
+export interface TranslateInput {
+  headline: string;
+  body: string;
+  whyItMatters: string;
+}
+
+export interface TranslateOutput {
+  headline: string;
+  body: string;
+  whyItMatters: string;
+}
+
+/** Translates an already-written summary — not a second summarization pass. */
+export interface Translator {
+  translate(input: TranslateInput): Promise<TranslateOutput>;
+}
+
 export interface AIProvider extends Embedder, Summarizer, FactExtractor {
   readonly name: string;
   readonly model: string;

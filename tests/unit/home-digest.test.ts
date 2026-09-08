@@ -9,14 +9,25 @@ it("uses HTTP when Python is enabled", async () => {
   const fetcher = vi.fn().mockResolvedValue(Response.json(digest));
   vi.stubGlobal("fetch", fetcher);
   expect(await getHomeDigest()).toEqual(digest);
-  expect(String(fetcher.mock.calls[0][0])).toBe("http://127.0.0.1:8000/api/digests/latest");
+  expect(String(fetcher.mock.calls[0][0])).toBe("http://127.0.0.1:8000/api/digests/latest?lang=tr");
   expect(fetcher.mock.calls[0][1].cache).toBe("no-store");
   expect(legacy).not.toHaveBeenCalled();
 });
 it("keeps unconfigured deployments working", async () => {
   vi.stubEnv("PYTHON_BACKEND_URL", undefined);
   await getHomeDigest();
-  expect(legacy).toHaveBeenCalledOnce();
+  expect(legacy).toHaveBeenCalledWith([], "tr");
+});
+it("passes the requested locale through on both paths", async () => {
+  vi.stubEnv("PYTHON_BACKEND_URL", undefined);
+  await getHomeDigest("en");
+  expect(legacy).toHaveBeenCalledWith([], "en");
+
+  vi.stubEnv("PYTHON_BACKEND_URL", "http://127.0.0.1:8000");
+  const fetcher = vi.fn().mockResolvedValue(Response.json({ digestId: "d", date: "x", items: [] }));
+  vi.stubGlobal("fetch", fetcher);
+  await getHomeDigest("en");
+  expect(String(fetcher.mock.calls[0][0])).toBe("http://127.0.0.1:8000/api/digests/latest?lang=en");
 });
 it("maps Python's missing digest to the empty homepage", async () => {
   vi.stubEnv("PYTHON_BACKEND_URL", "http://localhost:8000");

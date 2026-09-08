@@ -3,6 +3,7 @@ export interface PipelineAlertStats {
   cluster?: { embedded: number; failed: number; attachedToExisting: number; newStories: number };
   summarize?: { summarized: number; failed: number };
   digest?: { digestId: string; itemCount: number };
+  translate?: { translated: number; failed: number };
 }
 
 export interface PipelineAlertInput {
@@ -46,6 +47,9 @@ function buildLines(input: PipelineAlertInput): string[] {
   }
   if (input.stats?.digest) {
     lines.push(`Digest: ${input.stats.digest.itemCount} items (${input.stats.digest.digestId})`);
+  }
+  if (input.stats?.translate) {
+    lines.push(`Translate: ${input.stats.translate.translated} ok, ${input.stats.translate.failed} failed`);
   }
   return lines;
 }

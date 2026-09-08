@@ -11,3 +11,15 @@ export const CATEGORY_LABELS_TR: Record<Category, string> = {
   SOCIETY: "Toplum",
   SPORTS: "Spor",
 };
+
+export const CATEGORY_LABELS_EN: Record<Category, string> = {
+  POLITICS: "Politics",
+  ECONOMY: "Economy",
+  IMMIGRATION: "Immigration",
+  BERLIN: "Berlin",
+  TECHNOLOGY: "Technology",
+  EUROPE: "Europe",
+  BUSINESS: "Business",
+  SOCIETY: "Society",
+  SPORTS: "Sports",
+};

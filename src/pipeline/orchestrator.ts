@@ -14,6 +14,9 @@ import { OpenAIFactExtractor } from "@/modules/ai/providers/openai-fact-extracto
 import { OpenAISummarizer, OPENAI_SUMMARIZER_MODEL } from "@/modules/ai/providers/openai-summarizer";
 import { BuildDigestUseCase } from "@/modules/digest/application/build-digest.use-case";
 import { PrismaDigestRepository } from "@/modules/digest/infrastructure/prisma-digest-repository";
+import { TranslateStoriesUseCase } from "@/modules/ai/translator/application/translate-stories.use-case";
+import { PrismaTranslatorRepository } from "@/modules/ai/translator/infrastructure/prisma-translator-repository";
+import { OpenAITranslator } from "@/modules/ai/providers/openai-translator";
 import { ResendEmailSender } from "@/modules/notification/infrastructure/resend-email-sender";
 import {
   buildPipelineAlertEmail,
@@ -43,6 +46,7 @@ export interface PipelineRunSummary {
   rank: { ranked: number };
   summarize: { summarized: number; failed: number };
   digest: { digestId: string; itemCount: number };
+  translate: { translated: number; failed: number };
 }
 
 export async function runPipeline(): Promise<PipelineRunSummary> {
@@ -73,7 +77,13 @@ export async function runPipeline(): Promise<PipelineRunSummary> {
 
     const digestResult = await new BuildDigestUseCase(new PrismaDigestRepository()).execute();
 
-    const totalFailed = fetchResult.failed + clusterResult.failed + summarizeResult.failed;
+    const translateResult = await new TranslateStoriesUseCase(
+      new PrismaTranslatorRepository(),
+      new OpenAITranslator(),
+    ).execute(digestResult.storyIds);
+
+    const totalFailed =
+      fetchResult.failed + clusterResult.failed + summarizeResult.failed + translateResult.failed;
     const status =
       fetchResult.succeeded === 0
         ? "FAILED"
@@ -92,6 +102,7 @@ export async function runPipeline(): Promise<PipelineRunSummary> {
       rank: rankResult,
       summarize: summarizeResult,
       digest: digestResult,
+      translate: translateResult,
     };
 
     await prisma.pipelineRun.update({

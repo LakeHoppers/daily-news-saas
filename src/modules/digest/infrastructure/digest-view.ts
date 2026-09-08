@@ -2,6 +2,7 @@ import type { Prisma } from "@/generated/prisma/client";
 import type { Category } from "@/generated/prisma/enums";
 import { prisma } from "@/shared/prisma";
 import type { DigestView } from "../domain/types";
+import { pickLocalizedText, type Locale } from "../domain/localize";
 
 function digestItemsInclude(categories: Category[]) {
   return {
@@ -24,7 +25,7 @@ type DigestWithItems = Prisma.DigestGetPayload<{
   include: { items: ReturnType<typeof digestItemsInclude> };
 }>;
 
-function toDigestView(digest: DigestWithItems): DigestView {
+function toDigestView(digest: DigestWithItems, locale: Locale): DigestView {
   return {
     digestId: digest.id,
     date: digest.date.toISOString().slice(0, 10),
@@ -34,9 +35,13 @@ function toDigestView(digest: DigestWithItems): DigestView {
         rank: item.rank,
         storyId: item.storyId,
         category: item.story.category,
-        headline: summary?.headline ?? "",
-        summary: summary?.body ?? "",
-        whyItMatters: summary?.whyItMatters ?? "",
+        headline: pickLocalizedText(locale, summary?.headline ?? "", summary?.headlineEn),
+        summary: pickLocalizedText(locale, summary?.body ?? "", summary?.bodyEn),
+        whyItMatters: pickLocalizedText(
+          locale,
+          summary?.whyItMatters ?? "",
+          summary?.whyItMattersEn,
+        ),
         tags: summary?.tags ?? [],
         sourceUrls: item.story.rawArticles.map((article) => article.url),
       };
@@ -45,20 +50,26 @@ function toDigestView(digest: DigestWithItems): DigestView {
 }
 
 /** The most recent digest, optionally filtered to a set of favorite categories (empty = all). */
-export async function getLatestDigest(categories: Category[] = []): Promise<DigestView | null> {
+export async function getLatestDigest(
+  categories: Category[] = [],
+  locale: Locale = "tr",
+): Promise<DigestView | null> {
   const digest = await prisma.digest.findFirst({
     orderBy: { date: "desc" },
     include: { items: digestItemsInclude(categories) },
   });
-  return digest ? toDigestView(digest) : null;
+  return digest ? toDigestView(digest, locale) : null;
 }
 
-export async function getDigestByDate(date: Date): Promise<DigestView | null> {
+export async function getDigestByDate(
+  date: Date,
+  locale: Locale = "tr",
+): Promise<DigestView | null> {
   const digest = await prisma.digest.findUnique({
     where: { date },
     include: DIGEST_INCLUDE,
   });
-  return digest ? toDigestView(digest) : null;
+  return digest ? toDigestView(digest, locale) : null;
 }
 
 export interface DigestHistoryItem {

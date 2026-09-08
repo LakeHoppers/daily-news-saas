@@ -450,3 +450,65 @@ The global unused-story filter is intentionally unchanged: a same-day rerun can
 choose different stories and replace its edition. Stable published editions and
 publisher-level corroboration remain future policy work. Earlier accumulation
 follow-ups in this log are superseded by this fix.
+
+## First production deploy + hardening — 2026-09-08
+- [x] Vercel project deployed to production (`daily-news-saas.vercel.app`);
+      GitHub Actions hourly delivery activated (`PRODUCTION_URL` + `CRON_SECRET`).
+- [x] Fixed a real `FUNCTION_INVOCATION_TIMEOUT`: adding 7 new sources produced a
+      one-time backlog large enough to exceed Hobby's 300s limit. Capped
+      `getUnclusteredArticles` at 150 articles/run (ordered by `publishedAt desc`).
+- [x] Added a pipeline-failure alert email (`PIPELINE_ALERT_EMAIL`) — FAILED/
+      PARTIAL_FAILURE or a crash now emails a summary instead of failing silently.
+- [x] Homepage redesign: editorial layout (serif headlines, per-category accent
+      colors, numbered entries), dark mode (next-themes + header toggle), a
+      logomark, and a real favicon. Replaced the leftover "MVP altyapısı
+      kuruluyor" placeholder with an actual tagline. Renamed "Panelim" →
+      "Hesabım" in the header/dashboard.
+- [ ] Old oversized editions (30/20-item days from before the replacement fix)
+      still display as-is until next rebuilt for that date — not retroactively
+      corrected.
+
+## English translation (v1) — 2026-09-08
+- [x] Cheaper approach than a second summarization pass: translate the
+      already-written Turkish `Summary` (headline/body/whyItMatters) with one
+      GPT-4o-mini call per story, not a full extract+generate pass in English.
+      New `Translator` interface + `OpenAITranslator`
+      (`src/modules/ai/providers/openai-translator.ts`).
+- [x] Schema: nullable `headlineEn`/`bodyEn`/`whyItMattersEn` on `Summary`
+      (migration `20260908114909_add_summary_english_fields`, applied to the
+      live Neon DB). Tags are intentionally left untranslated for v1 (still
+      Turkish keywords in the English view) — revisit if that reads oddly once
+      the English audience actually uses it.
+- [x] New pipeline stage `TranslateStoriesUseCase`, run after digest assembly
+      so it only translates the day's ~10 selected stories (not every
+      candidate) — cheap and bounded, same failure-isolation pattern as
+      summarization.
+- [x] Read side: `getLatestDigest`/`getDigestByDate` take a `locale` ("tr" |
+      "en"), falling back to Turkish per-field if a story hasn't been
+      translated yet (`pickLocalizedText`). `/api/digests/latest?lang=en`
+      wired; `getHomeDigest` passes locale through to both the Prisma path and
+      the (currently inactive) Python backend path.
+- [x] Homepage: a TR/EN toggle (`?lang=en`), localized static copy
+      (`src/shared/home-copy.ts`), and English category labels
+      (`CATEGORY_LABELS_EN`).
+- [ ] Not yet live-verified against a real end-to-end pipeline run at the time
+      of writing this entry — verify translated content actually appears
+      correctly on `/?lang=en` before considering this done.
+- [ ] Site-wide locale (dashboard/admin/email) is out of scope for v1 — only
+      the public homepage digest is bilingual so far.
+
+## Product backlog (not started — flag to Emre before picking any of these up)
+- [ ] **Rename to "Morning Dose"**: proposed as the final brand name, bundled
+      with the English launch rather than done separately (already renamed
+      product twice this week; avoid a third mid-air change). Needs Emre's
+      go-ahead on timing.
+- [ ] **Monetization: ad-supported free tier**: Free = ads, Pro = ad-free (on
+      top of the existing "all categories + earlier delivery" Pro value).
+      Needs an ad network decision (e.g. AdSense) and consent/GDPR handling
+      for EU visitors — not started.
+- [ ] **Voice/audio digest ("listen in the car")**: read the daily digest
+      aloud via TTS. Proposed default approach: OpenAI TTS (already using
+      OpenAI elsewhere), one combined audio file per day's digest (not
+      per-story), stored in Vercel Blob, URL on the `Digest` row, a play
+      button on the homepage. Needs a decision on TTS provider/voice quality
+      before starting — not scoped in code yet.

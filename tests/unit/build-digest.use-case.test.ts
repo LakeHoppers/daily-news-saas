@@ -34,7 +34,11 @@ describe("BuildDigestUseCase", () => {
       new Date("2026-07-27T15:30:00.000Z"),
     );
 
-    expect(result).toEqual({ digestId: "digest-1", itemCount: 3 });
+    expect(result).toEqual({
+      digestId: "digest-1",
+      itemCount: 3,
+      storyIds: ["high", "mid", "low"],
+    });
     expect(repository.upsertCalls[0].rankedStoryIds).toEqual(["high", "mid", "low"]);
   });
 
@@ -50,7 +54,7 @@ describe("BuildDigestUseCase", () => {
   it("upserts an empty digest when there are no candidate stories", async () => {
     const repository = new FakeRepository();
     const result = await new BuildDigestUseCase(repository).execute(new Date());
-    expect(result).toEqual({ digestId: "digest-1", itemCount: 0 });
+    expect(result).toEqual({ digestId: "digest-1", itemCount: 0, storyIds: [] });
     expect(repository.upsertCalls[0].rankedStoryIds).toEqual([]);
   });
 });

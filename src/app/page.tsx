@@ -1,54 +1,79 @@
 import type { CSSProperties } from "react";
+import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getHomeDigest } from "@/shared/home-digest";
-import { CATEGORY_LABELS_TR } from "@/shared/category-labels";
+import { CATEGORY_LABELS_EN, CATEGORY_LABELS_TR } from "@/shared/category-labels";
 import { CATEGORY_ACCENT } from "@/shared/category-colors";
+import { HOME_COPY } from "@/shared/home-copy";
+import type { Locale } from "@/modules/digest/domain/localize";
 
-function formatTurkishDate(isoDate: string): string {
-  return new Intl.DateTimeFormat("tr-TR", {
+function formatDate(isoDate: string, locale: Locale): string {
+  return new Intl.DateTimeFormat(locale === "en" ? "en-US" : "tr-TR", {
     day: "numeric",
     month: "long",
     year: "numeric",
   }).format(new Date(`${isoDate}T00:00:00.000Z`));
 }
 
-export default async function Home() {
-  const digest = await getHomeDigest();
+export default async function Home({
+  searchParams,
+}: {
+  searchParams: Promise<{ lang?: string }>;
+}) {
+  const locale: Locale = (await searchParams).lang === "en" ? "en" : "tr";
+  const digest = await getHomeDigest(locale);
+  const copy = HOME_COPY[locale];
+  const categoryLabels = locale === "en" ? CATEGORY_LABELS_EN : CATEGORY_LABELS_TR;
 
   return (
-    <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-10 px-4 py-14 sm:py-20">
+    <main
+      lang={locale}
+      className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-10 px-4 py-14 sm:py-20"
+    >
       <div className="flex flex-col gap-4">
-        <div className="inline-flex w-fit items-center gap-2 text-xs font-medium tracking-wide text-muted-foreground uppercase">
-          <span className="h-1.5 w-1.5 rounded-full bg-foreground/50" />
-          Otomatik. Her sabah. Güvenilir.
+        <div className="flex items-center justify-between gap-4">
+          <div className="inline-flex items-center gap-2 text-xs font-medium tracking-wide text-muted-foreground uppercase">
+            <span className="h-1.5 w-1.5 rounded-full bg-foreground/50" />
+            {copy.tagline}
+          </div>
+          <div className="flex shrink-0 items-center gap-1 text-xs font-medium tracking-wide uppercase">
+            <Link
+              href="/"
+              className={locale === "tr" ? "text-foreground" : "text-muted-foreground hover:text-foreground"}
+            >
+              TR
+            </Link>
+            <span className="text-muted-foreground/40">/</span>
+            <Link
+              href="/?lang=en"
+              className={locale === "en" ? "text-foreground" : "text-muted-foreground hover:text-foreground"}
+            >
+              EN
+            </Link>
+          </div>
         </div>
         <h1 className="font-heading text-4xl leading-[1.1] font-medium text-balance sm:text-5xl">
-          Almanya&apos;dan her sabah, Türkçe özet.
+          {copy.title}
         </h1>
         <p className="max-w-md text-[15px] leading-relaxed text-muted-foreground">
-          News Daily; en önemli Alman haberlerini toplar, tekrarları
-          ayıklar, önem sırasına koyar ve akıcı Türkçe özetler halinde neden
-          önemli olduğunu anlatır.
+          {copy.description}
         </p>
       </div>
 
       {!digest || digest.items.length === 0 ? (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Bugünkü özet henüz yok</CardTitle>
+            <CardTitle className="text-base">{copy.emptyTitle}</CardTitle>
           </CardHeader>
-          <CardContent className="text-sm text-muted-foreground">
-            Haber toplama ve özetleme hattı henüz devreye alınmadı. İlk özet
-            burada görünecek.
-          </CardContent>
+          <CardContent className="text-sm text-muted-foreground">{copy.emptyBody}</CardContent>
         </Card>
       ) : (
         <div className="flex flex-col">
           <div className="flex items-center gap-3 border-y py-3 text-xs font-medium tracking-wide text-muted-foreground uppercase">
-            <span>{formatTurkishDate(digest.date)}</span>
+            <span>{formatDate(digest.date, locale)}</span>
             <span className="h-1 w-1 rounded-full bg-border" />
-            <span>{digest.items.length} haber</span>
+            <span>{copy.storiesLabel(digest.items.length)}</span>
           </div>
 
           {digest.items.map((item, index) => (
@@ -63,7 +88,7 @@ export default async function Home() {
                 </span>
                 <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold tracking-wide text-[var(--cat)] uppercase">
                   <span className="h-1.5 w-1.5 rounded-full bg-[var(--cat)]" />
-                  {CATEGORY_LABELS_TR[item.category]}
+                  {categoryLabels[item.category]}
                 </span>
               </div>
 
@@ -90,7 +115,7 @@ export default async function Home() {
                 className="border-l-2 pl-4 text-sm leading-relaxed text-foreground/80"
                 style={{ borderColor: "var(--cat)" }}
               >
-                <span className="font-semibold text-foreground">Neden önemli — </span>
+                <span className="font-semibold text-foreground">{copy.whyItMatters}</span>
                 {item.whyItMatters}
               </div>
 

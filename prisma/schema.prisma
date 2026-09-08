@@ -163,6 +163,9 @@ model Summary {
   body          String
   whyItMatters  String
   tags          String[]
+  headlineEn     String?
+  bodyEn         String?
+  whyItMattersEn String?
   aiProvider    String
   aiModel       String
   version       Int      @default(1)

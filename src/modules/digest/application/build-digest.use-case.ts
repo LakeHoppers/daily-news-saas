@@ -8,6 +8,7 @@ const MAX_ITEMS_PER_CATEGORY = 4;
 export interface BuildDigestResult {
   digestId: string;
   itemCount: number;
+  storyIds: string[];
 }
 
 export class BuildDigestUseCase {
@@ -41,6 +42,7 @@ export class BuildDigestUseCase {
       .filter((candidate) => selected.has(candidate.storyId))
       .map((candidate) => candidate.storyId);
 
-    return this.repository.upsertDigestForDate(startOfUtcDay(date), rankedStoryIds);
+    const result = await this.repository.upsertDigestForDate(startOfUtcDay(date), rankedStoryIds);
+    return { ...result, storyIds: rankedStoryIds };
   }
 }
