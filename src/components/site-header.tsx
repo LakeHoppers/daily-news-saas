@@ -33,7 +33,7 @@ export async function SiteHeader() {
           </Show>
           <Show when="signed-in">
             <Link href="/dashboard" className="text-sm font-medium">
-              Panelim
+              Hesabım
             </Link>
             <UserButton />
           </Show>

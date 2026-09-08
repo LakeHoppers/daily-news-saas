@@ -19,7 +19,7 @@ export default async function DashboardPage() {
   return (
     <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-8 px-4 py-16">
       <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-semibold tracking-tight">Panelim</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Hesabım</h1>
         <p className="text-muted-foreground">
           Hangi kategorilerin özetini görmek istediğini seç.
         </p>
