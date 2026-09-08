@@ -28,6 +28,7 @@ export class OpenAITranslator implements Translator {
 
     const response = await fetch(CHAT_URL, {
       method: "POST",
+      signal: AbortSignal.timeout(30_000),
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${this.apiKey}`,
@@ -54,8 +55,13 @@ export class OpenAITranslator implements Translator {
       throw new Error("OpenAI translation returned no message content");
     }
 
-    const parsed = JSON.parse(content) as Partial<TranslateOutput>;
-    if (!parsed.headline || !parsed.body || !parsed.whyItMatters) {
+    const parsed: unknown = JSON.parse(content);
+    if (
+      !parsed || typeof parsed !== "object" ||
+      !("headline" in parsed) || typeof parsed.headline !== "string" || !parsed.headline.trim() ||
+      !("body" in parsed) || typeof parsed.body !== "string" || !parsed.body.trim() ||
+      !("whyItMatters" in parsed) || typeof parsed.whyItMatters !== "string" || !parsed.whyItMatters.trim()
+    ) {
       throw new Error("OpenAI translation returned an incomplete result");
     }
 

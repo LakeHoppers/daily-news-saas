@@ -6,6 +6,7 @@ import type { TranslatorRepository } from "./ports";
 // straight-translation call per story instead of a full extract+generate
 // pass. Concurrency mirrors the summarizer's (one chat call per worker).
 const TRANSLATION_CONCURRENCY = 5;
+const RETRY_LIMIT = 5;
 
 export interface TranslateStoriesResult {
   translated: number;
@@ -19,7 +20,9 @@ export class TranslateStoriesUseCase {
   ) {}
 
   async execute(storyIds: string[]): Promise<TranslateStoriesResult> {
-    const summaries = await this.repository.getUntranslatedSummaries(storyIds);
+    const current = await this.repository.getUntranslatedSummaries(storyIds);
+    const retries = await this.repository.getPublishedUntranslatedSummaries(storyIds, RETRY_LIMIT);
+    const summaries = [...new Map([...current, ...retries].map(s => [s.summaryId, s])).values()];
 
     let translated = 0;
     let failed = 0;

@@ -19,6 +19,10 @@ class FakeTranslator implements Translator {
 
 class FakeRepository implements TranslatorRepository {
   summaries: SummaryToTranslate[] = [];
+  published: SummaryToTranslate[] = [];
+  async getPublishedUntranslatedSummaries(exclude: string[], limit: number) {
+    return this.published.filter(s => !exclude.includes(s.storyId) && !this.saved.some(x => x.summaryId === s.summaryId)).slice(0, limit);
+  }
   saved: { summaryId: string; output: TranslateOutput }[] = [];
 
   async getUntranslatedSummaries(storyIds: string[]) {
@@ -90,3 +94,23 @@ describe("TranslateStoriesUseCase", () => {
     expect(result).toEqual({ translated: 0, failed: 0 });
   });
 });
+
+ it("retries a failed published story on a later run with different selections, then stops", async () => {
+   const repository = new FakeRepository();
+   repository.published = [{summaryId: "old", storyId: "old-story", headline: "A", body: "B", whyItMatters: "C"}];
+   let fail = true;
+   const translator = new FakeTranslator(() => fail ? new Error("429") : {headline:"A",body:"B",whyItMatters:"C"});
+   const useCase = new TranslateStoriesUseCase(repository, translator);
+   expect(await useCase.execute(["new-story"])).toEqual({translated:0,failed:1});
+   fail = false;
+   expect(await useCase.execute(["another-story"])).toEqual({translated:1,failed:0});
+   expect(await useCase.execute([])).toEqual({translated:0,failed:0});
+ });
+ it("bounds retry work to five and excludes current selections", async () => {
+   const repository = new FakeRepository();
+   repository.published = Array.from({length:12}, (_, i) => ({summaryId:`s${i}`,storyId:`a${i}`,headline:"A",body:"B",whyItMatters:"C"}));
+   repository.summaries = [repository.published[0]];
+   const translator = new FakeTranslator(() => ({headline:"A",body:"B",whyItMatters:"C"}));
+   expect(await new TranslateStoriesUseCase(repository,translator).execute(["a0"])).toEqual({translated:6,failed:0});
+   expect(new Set(repository.saved.map(s=>s.summaryId)).size).toBe(6);
+ });

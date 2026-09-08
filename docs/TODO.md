@@ -526,7 +526,7 @@ follow-ups in this log are superseded by this fix.
       the prompt fix alone doesn't hold up.
 
 ## Known correctness gaps in the translator (flagged by Codex review, 2026-09-08)
-- [ ] **Failed translations never retry.** `TranslateStoriesUseCase` only ever
+- [x] **Original issue: failed translations never retry (fixed below).** `TranslateStoriesUseCase` only ever
       runs against the current run's freshly-selected digest story ids. Since
       a story is excluded from all future digest candidate pools once it's
       been used in any digest (same rule that lets same-day reruns pick fresh
@@ -537,11 +537,11 @@ follow-ups in this log are superseded by this fix.
       fix: scan for untranslated summaries independent of "this run's
       selection" (e.g. across the last few days' digests), not just
       `digestResult.storyIds`.
-- [ ] **Minor**: `OpenAITranslator` validates output with a truthiness check
+- [x] **Translator validation fixed below**: originally `OpenAITranslator` validated output with a truthiness check
       (`!parsed.headline`) rather than a real non-empty-string check — matches
       the exact same pattern already in `OpenAISummarizer`, so not a
       regression, but both could be tightened together for consistency.
-Both acknowledged, not yet fixed — do this together next session.
+Resolved for the translator below on 2026-09-08; the historical findings above describe the original behavior. Summarizer validation remains separate.
 
 ## Email delivery is still Turkish-only and undesigned (flagged 2026-09-08)
 - [ ] `PrismaDigestReader` (notification module) calls `getLatestDigest`
@@ -583,3 +583,28 @@ domain later anyway.
       per-story), stored in Vercel Blob, URL on the `Digest` row, a play
       button on the homepage. Needs a decision on TTS provider/voice quality
       before starting — not scoped in code yet.
+
+
+## Translation retries and dedup investigation — 2026-09-08
+- [x] Translation stage now also queries up to five incomplete latest summaries
+      from published digests, independently of current selected story IDs.
+      All publication dates are eligible; oldest first, excluding current IDs.
+      Completed English fields remove a summary from the retry pool. Partial or
+      blank translations qualify too. Older summary versions do not consume slots.
+- [x] Current translations retain five-worker concurrency; the extra retry budget
+      is five calls per run. Translator requests have a 30-second timeout.
+- [x] OpenAITranslator rejects non-string and whitespace-only fields before saving.
+- [x] 118 tests pass, including failure on one run followed by successful retry
+      with different selections, completion exclusion, retry budgeting, and malformed
+      provider output. Typecheck, lint and production build pass. Live Neon read-only queries returned
+      five pending retries and five different records when excluding that first set.
+- [ ] Five persistently failing oldest summaries could occupy all retry slots.
+      Persisted attempt counters/backoff and fair scheduling remain hardening work.
+- [ ] Added retry calls may increase pipeline runtime. No full pipeline or email
+      send was triggered for this task; the prior 195s measurement predates retries.
+- [x] Investigated the reported sabotage duplicate using existing live embeddings:
+      same-run creation 0.389 seconds apart, maximum cross-cluster article cosine
+      0.773831, centroid cosine 0.824298; RSS bodies only 119–221 characters.
+      See DEDUP_INVESTIGATION.md. Threshold unchanged; existing rows not merged.
+- [ ] Calibrate event-level duplicate detection with positive AND negative examples
+      before changing the 0.83 threshold or adding a second-stage verifier.

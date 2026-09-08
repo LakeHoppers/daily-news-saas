@@ -223,3 +223,10 @@ CandidateStory now includes category. The repository retrieves up to ten candida
 per category; BuildDigestUseCase applies a soft four-per-category limit, relaxing
 it to fill ten slots when needed. Same-day item sets are replaced atomically,
 including deletion of stale items. Source catalog expanded to 15; see SOURCES.md.
+
+
+Translation recovery: after digest assembly, translate current items plus at most
+five incomplete latest summaries from previously published digests. The recovery
+query is independent of unused-story selection, excludes current IDs, and orders
+oldest first. Five workers and a 30-second request timeout bound translation work;
+provider output must contain three nonempty strings. No schema change is required.
