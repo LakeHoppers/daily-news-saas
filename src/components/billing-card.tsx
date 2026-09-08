@@ -31,7 +31,7 @@ export function BillingCard({ plan }: { plan: "FREE" | "PRO" }) {
         <p className="text-xs text-muted-foreground">
           {plan === "PRO"
             ? "Tüm kategoriler ve istediğin saatte teslimat açık."
-            : `Ücretsiz planda ${FREE_MAX_CATEGORIES} kategori ve sabit ${FREE_DIGEST_HOUR}:00 teslimat saati var.`}
+            : `${FREE_MAX_CATEGORIES} kategori ve sabit sabah ${FREE_DIGEST_HOUR}:00 teslimatı.`}
         </p>
       </div>
       <button
