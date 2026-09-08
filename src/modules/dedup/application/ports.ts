@@ -11,7 +11,7 @@ export interface UnclusteredArticleRecord {
 }
 
 export interface DedupRepository {
-  getUnclusteredArticles(): Promise<UnclusteredArticleRecord[]>;
+  getUnclusteredArticles(limit: number): Promise<UnclusteredArticleRecord[]>;
   getRecentStoryCentroids(sinceHours: number): Promise<StoryCentroid[]>;
   saveEmbedding(articleId: string, embedding: number[]): Promise<void>;
   attachArticlesToStory(storyId: string, articleIds: string[]): Promise<void>;

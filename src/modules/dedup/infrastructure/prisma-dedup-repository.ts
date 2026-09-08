@@ -5,9 +5,11 @@ import type { StoryCentroid } from "../domain/clustering";
 import type { DedupRepository, UnclusteredArticleRecord } from "../application/ports";
 
 export class PrismaDedupRepository implements DedupRepository {
-  async getUnclusteredArticles(): Promise<UnclusteredArticleRecord[]> {
+  async getUnclusteredArticles(limit: number): Promise<UnclusteredArticleRecord[]> {
     const articles = await prisma.rawArticle.findMany({
       where: { storyId: null },
+      orderBy: { publishedAt: { sort: "desc", nulls: "last" } },
+      take: limit,
       select: {
         id: true,
         title: true,

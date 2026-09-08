@@ -25,8 +25,8 @@ class FakeRepository implements DedupRepository {
   createdStories: { category: Category; articleIds: string[] }[] = [];
   private nextStoryId = 1;
 
-  async getUnclusteredArticles() {
-    return this.articles;
+  async getUnclusteredArticles(limit: number) {
+    return this.articles.slice(0, limit);
   }
   async getRecentStoryCentroids() {
     return this.centroids;
@@ -117,6 +117,22 @@ describe("ClusterArticlesUseCase", () => {
       newStories: 0,
       touchedStoryIds: [],
     });
+  });
+
+  it("bounds how many articles a single run processes, leaving the rest for the next run", async () => {
+    const repository = new FakeRepository();
+    repository.articles = Array.from({ length: 5 }, (_, i) =>
+      makeArticle({ id: `a${i}`, title: `T${i}`, rawContent: `C${i}` }),
+    );
+    const embedder = new FakeEmbedder(
+      Object.fromEntries(repository.articles.map((a) => [`${a.title}\n${a.rawContent}`, [1, 0, 0]])),
+    );
+
+    const useCase = new ClusterArticlesUseCase(repository, embedder);
+    const result = await useCase.execute(3);
+
+    expect(result.embedded).toBe(3);
+    expect(Object.keys(repository.savedEmbeddings)).toHaveLength(3);
   });
 });
 

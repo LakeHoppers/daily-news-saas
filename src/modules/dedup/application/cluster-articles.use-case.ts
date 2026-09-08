@@ -10,6 +10,13 @@ const EMBEDDING_CONCURRENCY = 15;
 const SIMILARITY_THRESHOLD = 0.83;
 const EXISTING_STORY_WINDOW_HOURS = 48;
 const MAX_EMBEDDING_INPUT_CHARS = 4000;
+/**
+ * Caps articles embedded per run so a large backlog (e.g. right after adding
+ * new sources) can't push a single serverless invocation past its time
+ * limit. Leftover articles stay unclustered (storyId: null) and are picked
+ * up by the next run, same as an embedding failure already leaves them.
+ */
+const MAX_ARTICLES_PER_RUN = 150;
 
 export interface ClusterArticlesResult {
   embedded: number;
@@ -25,8 +32,8 @@ export class ClusterArticlesUseCase {
     private readonly embedder: Embedder,
   ) {}
 
-  async execute(): Promise<ClusterArticlesResult> {
-    const articles = await this.repository.getUnclusteredArticles();
+  async execute(limit: number = MAX_ARTICLES_PER_RUN): Promise<ClusterArticlesResult> {
+    const articles = await this.repository.getUnclusteredArticles(limit);
     if (articles.length === 0) {
       return { embedded: 0, failed: 0, attachedToExisting: 0, newStories: 0, touchedStoryIds: [] };
     }
