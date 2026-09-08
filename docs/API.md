@@ -219,3 +219,10 @@ yet" }`. Database errors return sanitized 503. The current TS route stays intact
 Contrary to older preview wording above, the existing implementation returns all
 stored items publicly; Python preserves that contract. Homepage HTTP opt-in and
 verification: [PYTHON_MIGRATION.md](PYTHON_MIGRATION.md).
+
+### Digest generation policy (2026-09-08)
+Read response shapes are unchanged. A rebuilt edition now contains exactly its
+latest ranked selection (up to 10), rather than accumulating prior-run items.
+Selection uses a soft cap of four per category; it fills remaining slots by score
+when diversity is insufficient. An empty selection clears that edition's items.
+Previously delivered email is not modified or resent by this operation.

@@ -217,3 +217,9 @@ Failed records no longer count as received. This supersedes the timeout conclusi
 and exact-hour delivery descriptions above. See DEPLOYMENT.md for evidence/limits.
 
 Phase-1 Python read service now lives in `backend/`, preserving domain/application/infrastructure boundaries. Next.js homepage opts into its HTTP endpoint via `PYTHON_BACKEND_URL`; Prisma remains schema authority. See [PYTHON_MIGRATION.md](PYTHON_MIGRATION.md).
+
+### Digest selection/replacement update (2026-09-08)
+CandidateStory now includes category. The repository retrieves up to ten candidates
+per category; BuildDigestUseCase applies a soft four-per-category limit, relaxing
+it to fill ten slots when needed. Same-day item sets are replaced atomically,
+including deletion of stale items. Source catalog expanded to 15; see SOURCES.md.

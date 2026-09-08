@@ -429,3 +429,24 @@ idempotency remains separate hardening work).
 The final product name is **News Daily**. UI, metadata, email templates, default
 sender display name, Python API title and documentation use this name. Turkish
 body copy is unchanged. Existing infrastructure/package identifiers stay stable.
+
+## Digest replacement and coverage — 2026-09-08
+- [x] Same-day item replacement is atomic: get/create the digest, delete stale
+      items, upsert ranked replacements in one transaction, including empty lists.
+- [x] Parent-row update serializes replacement writes to the same edition.
+- [x] Category-aware candidate pool (10/category) and soft cap 4/10; fallback fills
+      by importance when variety is insufficient. Deterministic ID tie-breaking.
+- [x] Seven publisher-verified RSS/Atom feeds added; catalog now 15. See SOURCES.md
+      for URLs, categories, trust scores, counts and freshness caveats.
+- [x] Applied the idempotent seed to the live database: 15 sources seeded.
+- [x] Verification: 94 TypeScript tests, lint, typecheck and production build pass;
+      Python checks also pass (6 tests, 1 opt-in live test skipped; Ruff clean).
+- [x] Regression tests cover repeated same-day sets, empty replacement, rollback,
+      other-edition isolation, skewed categories and single-category full digests.
+- [ ] Existing oversized editions are corrected when next rebuilt; this change
+      does not retrospectively edit old editions or resend delivered email.
+
+The global unused-story filter is intentionally unchanged: a same-day rerun can
+choose different stories and replace its edition. Stable published editions and
+publisher-level corroboration remain future policy work. Earlier accumulation
+follow-ups in this log are superseded by this fix.

@@ -50,6 +50,49 @@ const sources = [
     category: "EUROPE" as const,
     trustScore: 80,
   },
+  // Publisher-discovered feeds, HTTP and RSS/Atom validated 2026-09-08.
+  {
+    name: "heise online",
+    url: "https://www.heise.de/rss/heise-atom.xml",
+    category: "TECHNOLOGY" as const,
+    trustScore: 90,
+  },
+  {
+    name: "Sportschau – Sportmeldungen",
+    url: "https://www.sportschau.de/index~rss2.xml",
+    category: "SPORTS" as const,
+    trustScore: 90,
+  },
+  {
+    name: "Deutschlandfunk – Gesellschaft",
+    url: "https://www.deutschlandfunk.de/gesellschaft-106.rss",
+    category: "SOCIETY" as const,
+    trustScore: 90,
+  },
+  {
+    name: "Handelsblatt – Unternehmen",
+    url: "https://feeds.cms.handelsblatt.com/unternehmen",
+    category: "BUSINESS" as const,
+    trustScore: 85,
+  },
+  {
+    name: "BAMF – Aktuelle Meldungen",
+    url: "https://www.bamf.de/SiteGlobals/Functions/RSS/DE/Feed/RSSNewsfeed_Meldungen.xml?nn=282672",
+    category: "IMMIGRATION" as const,
+    trustScore: 90,
+  },
+  {
+    name: "Berliner Zeitung – Mensch & Metropole",
+    url: "https://www.berliner-zeitung.de/feed.id_mensch_und_metropole.xml",
+    category: "BERLIN" as const,
+    trustScore: 80,
+  },
+  {
+    name: "Deutschlandfunk – Europa",
+    url: "https://www.deutschlandfunk.de/europa-112.rss",
+    category: "EUROPE" as const,
+    trustScore: 90,
+  },
 ];
 
 async function main() {
