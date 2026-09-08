@@ -23,7 +23,14 @@ Respond with JSON only, in this exact shape:
   "tags": string[]            // 2-5 short Turkish tags/keywords
 }
 
-Prefer the candidate category unless the facts clearly indicate a better fit.`;
+The candidate category is only a weak hint derived from which outlet reported
+the story, not from its actual content — general-interest German outlets
+cover every topic, so a Tagesspiegel (Berlin) or Handelsblatt (Economy)
+byline does not mean the story is about Berlin or the economy. Classify
+"category" strictly by what the facts are actually about; only fall back to
+the candidate when the facts are genuinely ambiguous between two categories.
+BERLIN specifically means the story's subject is Berlin the city/state
+government — not merely that a Berlin-based outlet reported it.`;
 
 export class OpenAISummarizer implements Summarizer {
   constructor(private readonly apiKey: string = process.env.OPENAI_API_KEY ?? "") {}
