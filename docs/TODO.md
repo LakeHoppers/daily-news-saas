@@ -491,11 +491,60 @@ follow-ups in this log are superseded by this fix.
 - [x] Homepage: a TR/EN toggle (`?lang=en`), localized static copy
       (`src/shared/home-copy.ts`), and English category labels
       (`CATEGORY_LABELS_EN`).
-- [ ] Not yet live-verified against a real end-to-end pipeline run at the time
-      of writing this entry — verify translated content actually appears
-      correctly on `/?lang=en` before considering this done.
+- [x] Live-verified: a real pipeline run translated 10/10 stories with 0
+      failures (195s total), and `/?lang=tr` and `/?lang=en` both render
+      correctly on production.
 - [ ] Site-wide locale (dashboard/admin/email) is out of scope for v1 — only
-      the public homepage digest is bilingual so far.
+      the public homepage digest is bilingual so far. Scoped as a Codex task
+      (locale-based routing, header/Clerk auth UI, migrate the `?lang=`
+      homepage mechanism onto it) — not yet picked up.
+- [ ] Story tags (e.g. "Huthi", "Suudi Arabistan") hidden from the homepage
+      (2026-09-08) — they rendered as bordered pills that looked clickable but
+      weren't. Data/`Summary.tags` untouched; either restyle as plain
+      non-interactive text or make them a real tag-filter feature later.
+
+## Known correctness gaps in the translator (flagged by Codex review, 2026-09-08)
+- [ ] **Failed translations never retry.** `TranslateStoriesUseCase` only ever
+      runs against the current run's freshly-selected digest story ids. Since
+      a story is excluded from all future digest candidate pools once it's
+      been used in any digest (same rule that lets same-day reruns pick fresh
+      stories), a story whose translation fails today can never come up again
+      to retry — it's stuck showing the Turkish fallback forever. This is the
+      same class of bug M3's summarization step already hit once (see
+      "Fixed a real scoping bug before it shipped" above) — needs the same
+      fix: scan for untranslated summaries independent of "this run's
+      selection" (e.g. across the last few days' digests), not just
+      `digestResult.storyIds`.
+- [ ] **Minor**: `OpenAITranslator` validates output with a truthiness check
+      (`!parsed.headline`) rather than a real non-empty-string check — matches
+      the exact same pattern already in `OpenAISummarizer`, so not a
+      regression, but both could be tightened together for consistency.
+Both acknowledged, not yet fixed — do this together next session.
+
+## Email delivery is still Turkish-only and undesigned (flagged 2026-09-08)
+- [ ] `PrismaDigestReader` (notification module) calls `getLatestDigest`
+      without a locale, so delivered emails are always Turkish regardless of
+      any future language preference — the English translation feature only
+      reaches the homepage so far.
+- [ ] The email template (`src/modules/notification/domain/email-template.ts`)
+      still uses the old plain inline-style HTML from before the homepage
+      redesign — doesn't match the new editorial look at all. Needs a design
+      pass once real delivery is unblocked (see domain/Resend below) — no
+      point polishing an email nobody but Emre can currently receive.
+
+## Sending domain — sequencing decision (2026-09-08)
+Emre wants to **finish the market-facing name decision first** (see "Rename to
+Morning Dose" above) before buying a domain — buying one now under a name that
+might change within days would be wasted money and require re-verifying a new
+domain later anyway.
+- [ ] Once the name is locked: buy a domain (or use a subdomain of an
+      existing one Emre owns, e.g. `news.synch.coach` — his call, no specific
+      registrar suggested per his standing instruction) → add it in Resend
+      (Domains → Add Domain) → add the SPF/DKIM DNS records Resend provides
+      at the registrar/DNS host → wait for verification → then I update
+      `EMAIL_FROM_ADDRESS` (local `.env` + Vercel) and redeploy.
+- [ ] **Remind Emre about this proactively** (his explicit request) whenever
+      picking this project back up, alongside the other backlog items above.
 
 ## Product backlog (not started — flag to Emre before picking any of these up)
 - [ ] **Rename to "Morning Dose"**: proposed as the final brand name, bundled
