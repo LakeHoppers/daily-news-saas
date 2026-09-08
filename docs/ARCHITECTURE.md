@@ -230,3 +230,10 @@ five incomplete latest summaries from previously published digests. The recovery
 query is independent of unused-story selection, excludes current IDs, and orders
 oldest first. Five workers and a 30-second request timeout bound translation work;
 provider output must contain three nonempty strings. No schema change is required.
+
+
+Python phase 2a mirrors scraper/parser/dedup/ranking boundaries under backend/app.
+Its manual pipeline runner reads a repeatable-read, read-only snapshot and produces
+local plans; it cannot persist pipeline output. Stored embeddings are reused without
+AI calls. Production orchestration remains TypeScript. See PYTHON_MIGRATION.md for
+comparison evidence and the separate phase-4 scheduler/authoritative-write boundary.

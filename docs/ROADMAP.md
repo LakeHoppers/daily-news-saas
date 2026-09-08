@@ -76,3 +76,10 @@ catches up after the preferred hour and deduplicates successful sends.
 See [DEPLOYMENT.md](DEPLOYMENT.md).
 
 Python migration phases 0–1 are locally verified. Proposed phases 2–4 (not yet authorized) and scope/effort estimates are in [PYTHON_MIGRATION.md](PYTHON_MIGRATION.md).
+
+
+### Python migration sequencing — 2026-09-08
+2a read-only ingestion/dedup/ranking replay is implemented and live-compared.
+2b covers real AI adapters/samples; 2c covers manual full runs with isolated output.
+Production scheduler and authoritative writer cutover remain phase 4. Current
+estimates: 2a 3–5, 2b 2–4, 2c 2–3 engineering days; see PYTHON_MIGRATION.md.

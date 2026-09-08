@@ -608,3 +608,21 @@ domain later anyway.
       See DEDUP_INVESTIGATION.md. Threshold unchanged; existing rows not merged.
 - [ ] Calibrate event-level duplicate detection with positive AND negative examples
       before changing the 0.83 threshold or adding a second-stage verifier.
+
+
+## Python phase 2a — 2026-09-08
+- [x] Restructured phase 2 into independently reviewable 2a/2b/2c; production
+      scheduler and authoritative-write cutover remain phase 4. Estimates and
+      detailed rationale in PYTHON_MIGRATION.md.
+- [x] Python read-only RSS/Atom normalization, concurrent fetching, cached-vector
+      dedup/centroid matching and deterministic ranking. No new dependencies.
+- [x] Real dry-run parity: 15 feeds, 926 items; all normalized fields match TS.
+      150 historical articles reproduce 111 stored clusters and 18 attachments;
+      all 124 ranking scores match the TS oracle. 7.661s, zero AI calls/writes.
+- [ ] 2b: OpenAI embeddings/summarization/translation sample verification.
+- [ ] 2c: full manual isolated-output orchestration and real <300s timing.
+- [ ] 4: production scheduling/sole writer, deployment and migrations cutover;
+      explicitly not part of phase 2.
+
+Phase 2a final checks: 118 TS tests and 18 Python tests (including both live
+read-only checks) pass; Ruff check/format, ESLint, typecheck and production build pass.

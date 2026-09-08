@@ -25,3 +25,21 @@ def test_real_neon_read_only_slice():
         assert [i["rank"] for i in digest["items"]] == sorted(i["rank"] for i in digest["items"])
     finally:
         engine.dispose()
+
+
+@pytest.mark.live
+@pytest.mark.skipif(os.getenv("RUN_LIVE_TESTS") != "1", reason="explicit opt-in required")
+def test_real_pipeline_snapshot_is_read_only():
+    from app.pipeline.application.replay import replay
+    from app.pipeline.infrastructure.snapshot import PostgresSnapshotReader
+
+    engine = build_engine()
+    try:
+        snapshot = PostgresSnapshotReader(engine).read()
+        assert snapshot["transaction_read_only"] is True
+        assert snapshot["articles"] and snapshot["ranking_stories"]
+        result = replay(snapshot)
+        assert result["plan"]["selected"] <= 150
+        assert len(result["scores"]) == len(snapshot["ranking_stories"])
+    finally:
+        engine.dispose()

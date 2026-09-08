@@ -1,0 +1,310 @@
+{
+  "verified_at": "2026-09-08",
+  "snapshot_sha256": "eca55ad142cf5c8b0329f69877ff7abe04bafc9e5ff011a701dfa30f83ec289c",
+  "python": {
+    "run_id": "cmtsm5nwb0000ai5rgxr8wa7r",
+    "read_only": true,
+    "ai_calls": 0,
+    "writes": 0,
+    "duration_seconds": 7.661,
+    "feeds": [
+      {
+        "source_id": "cmtmsjv1w0000s45r9nlxfj4u",
+        "success": true,
+        "count": 40,
+        "name": "Tagesschau"
+      },
+      {
+        "source_id": "cmtmsjvmt0001s45rz1ol8z8x",
+        "success": true,
+        "count": 15,
+        "name": "S\u00fcddeutsche Zeitung \u2013 Topthemen"
+      },
+      {
+        "source_id": "cmtmsjvpb0002s45rcerfab8d",
+        "success": true,
+        "count": 161,
+        "name": "FAZ \u2013 Aktuell"
+      },
+      {
+        "source_id": "cmtmsjvrn0003s45rjq8tcn47",
+        "success": true,
+        "count": 15,
+        "name": "Zeit Online"
+      },
+      {
+        "source_id": "cmtmsjvtx0004s45rvzjs55td",
+        "success": true,
+        "count": 30,
+        "name": "Spiegel Online \u2013 Schlagzeilen"
+      },
+      {
+        "source_id": "cmtmsjvw90005s45rd653yk6w",
+        "success": true,
+        "count": 50,
+        "name": "Handelsblatt \u2013 Schlagzeilen"
+      },
+      {
+        "source_id": "cmtmsjvyn0006s45rnqj63ax1",
+        "success": true,
+        "count": 100,
+        "name": "Tagesspiegel \u2013 Berlin"
+      },
+      {
+        "source_id": "cmtmsjw3r0007s45rg6jp6c0k",
+        "success": true,
+        "count": 83,
+        "name": "Deutsche Welle \u2013 Deutsch"
+      },
+      {
+        "source_id": "cmtsfilnl0008u95rvauvyvh8",
+        "success": true,
+        "count": 159,
+        "name": "heise online"
+      },
+      {
+        "source_id": "cmtsfilqv0009u95rq9ovn8vk",
+        "success": true,
+        "count": 53,
+        "name": "Sportschau \u2013 Sportmeldungen"
+      },
+      {
+        "source_id": "cmtsfiltj000au95rfzoevlca",
+        "success": true,
+        "count": 100,
+        "name": "Deutschlandfunk \u2013 Gesellschaft"
+      },
+      {
+        "source_id": "cmtsfilwf000bu95rt4gf0ynb",
+        "success": true,
+        "count": 20,
+        "name": "Handelsblatt \u2013 Unternehmen"
+      },
+      {
+        "source_id": "cmtsfilz8000cu95rsoc3q0on",
+        "success": true,
+        "count": 20,
+        "name": "BAMF \u2013 Aktuelle Meldungen"
+      },
+      {
+        "source_id": "cmtsfim25000du95ru5zt4mvi",
+        "success": true,
+        "count": 50,
+        "name": "Berliner Zeitung \u2013 Mensch & Metropole"
+      },
+      {
+        "source_id": "cmtsfim4p000eu95rmena7buy",
+        "success": true,
+        "count": 30,
+        "name": "Deutschlandfunk \u2013 Europa"
+      }
+    ],
+    "historical_articles": 150,
+    "historical_groups": 111,
+    "ranked_stories": 124,
+    "stored_scores_within_run_clock_bounds": true,
+    "replayed_groups": 111,
+    "stored_groups_match": true,
+    "stored_attachments_match": true,
+    "historical_attachments": 18
+  },
+  "typescript": {
+    "plan_matches": true,
+    "scores_match": true,
+    "feeds": [
+      {
+        "source_id": "cmtmsjv1w0000s45r9nlxfj4u",
+        "ts_count": 40,
+        "python_count": 40,
+        "differences": {
+          "external_id": 0,
+          "url": 0,
+          "title": 0,
+          "raw_content": 0,
+          "published_at": 0
+        }
+      },
+      {
+        "source_id": "cmtmsjvmt0001s45rz1ol8z8x",
+        "ts_count": 15,
+        "python_count": 15,
+        "differences": {
+          "external_id": 0,
+          "url": 0,
+          "title": 0,
+          "raw_content": 0,
+          "published_at": 0
+        }
+      },
+      {
+        "source_id": "cmtmsjvpb0002s45rcerfab8d",
+        "ts_count": 161,
+        "python_count": 161,
+        "differences": {
+          "external_id": 0,
+          "url": 0,
+          "title": 0,
+          "raw_content": 0,
+          "published_at": 0
+        }
+      },
+      {
+        "source_id": "cmtmsjvrn0003s45rjq8tcn47",
+        "ts_count": 15,
+        "python_count": 15,
+        "differences": {
+          "external_id": 0,
+          "url": 0,
+          "title": 0,
+          "raw_content": 0,
+          "published_at": 0
+        }
+      },
+      {
+        "source_id": "cmtmsjvtx0004s45rvzjs55td",
+        "ts_count": 30,
+        "python_count": 30,
+        "differences": {
+          "external_id": 0,
+          "url": 0,
+          "title": 0,
+          "raw_content": 0,
+          "published_at": 0
+        }
+      },
+      {
+        "source_id": "cmtmsjvw90005s45rd653yk6w",
+        "ts_count": 50,
+        "python_count": 50,
+        "differences": {
+          "external_id": 0,
+          "url": 0,
+          "title": 0,
+          "raw_content": 0,
+          "published_at": 0
+        }
+      },
+      {
+        "source_id": "cmtmsjvyn0006s45rnqj63ax1",
+        "ts_count": 100,
+        "python_count": 100,
+        "differences": {
+          "external_id": 0,
+          "url": 0,
+          "title": 0,
+          "raw_content": 0,
+          "published_at": 0
+        }
+      },
+      {
+        "source_id": "cmtmsjw3r0007s45rg6jp6c0k",
+        "ts_count": 83,
+        "python_count": 83,
+        "differences": {
+          "external_id": 0,
+          "url": 0,
+          "title": 0,
+          "raw_content": 0,
+          "published_at": 0
+        }
+      },
+      {
+        "source_id": "cmtsfilnl0008u95rvauvyvh8",
+        "ts_count": 159,
+        "python_count": 159,
+        "differences": {
+          "external_id": 0,
+          "url": 0,
+          "title": 0,
+          "raw_content": 0,
+          "published_at": 0
+        }
+      },
+      {
+        "source_id": "cmtsfilqv0009u95rq9ovn8vk",
+        "ts_count": 53,
+        "python_count": 53,
+        "differences": {
+          "external_id": 0,
+          "url": 0,
+          "title": 0,
+          "raw_content": 0,
+          "published_at": 0
+        }
+      },
+      {
+        "source_id": "cmtsfiltj000au95rfzoevlca",
+        "ts_count": 100,
+        "python_count": 100,
+        "differences": {
+          "external_id": 0,
+          "url": 0,
+          "title": 0,
+          "raw_content": 0,
+          "published_at": 0
+        }
+      },
+      {
+        "source_id": "cmtsfilwf000bu95rt4gf0ynb",
+        "ts_count": 20,
+        "python_count": 20,
+        "differences": {
+          "external_id": 0,
+          "url": 0,
+          "title": 0,
+          "raw_content": 0,
+          "published_at": 0
+        }
+      },
+      {
+        "source_id": "cmtsfilz8000cu95rsoc3q0on",
+        "ts_count": 20,
+        "python_count": 20,
+        "differences": {
+          "external_id": 0,
+          "url": 0,
+          "title": 0,
+          "raw_content": 0,
+          "published_at": 0
+        }
+      },
+      {
+        "source_id": "cmtsfim25000du95ru5zt4mvi",
+        "ts_count": 50,
+        "python_count": 50,
+        "differences": {
+          "external_id": 0,
+          "url": 0,
+          "title": 0,
+          "raw_content": 0,
+          "published_at": 0
+        }
+      },
+      {
+        "source_id": "cmtsfim4p000eu95rmena7buy",
+        "ts_count": 30,
+        "python_count": 30,
+        "differences": {
+          "external_id": 0,
+          "url": 0,
+          "title": 0,
+          "raw_content": 0,
+          "published_at": 0
+        }
+      }
+    ]
+  },
+  "checks": {
+    "typescript_tests": 118,
+    "python_tests_including_live": 18,
+    "lint": "passed",
+    "typecheck": "passed",
+    "ruff": "passed",
+    "production_build": "passed"
+  },
+  "limits": [
+    "No new AI calls or shared-table writes",
+    "Historical cohort reconstructed from timestamps; input history is not fully archived",
+    "Dry-run timing excludes embedding generation, summarization, translation and digest assembly"
+  ]
+}

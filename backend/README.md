@@ -1,6 +1,6 @@
 # News Daily Python read API
 
-Phase 1 only: `GET /api/digests/latest`. See [migration decisions](../docs/PYTHON_MIGRATION.md).
+Read API: `GET /api/digests/latest`; phase 2a adds a manual dry-run CLI. See [migration decisions](../docs/PYTHON_MIGRATION.md).
 Python 3.12 required. From the repository root:
 
 ```sh
@@ -46,3 +46,20 @@ Future host configuration (not deployed in this phase): repository root director
 `uvicorn app.main:app --host 0.0.0.0 --port "$PORT"`, with private DATABASE_URL.
 No persistent disk needed. Dependencies are pinned, including dev/test tools for
 this proof of concept; split runtime/dev locks before production cutover.
+
+
+## Phase 2a manual verification
+
+From the repo root with the existing environment configured:
+
+```sh
+PYTHONPATH=backend backend/.venv/bin/python -m app.pipeline.dry_run --output /tmp/news-daily-phase2a
+npx tsx scripts/compare-python-pipeline.ts /tmp/news-daily-phase2a
+```
+
+Optionally pass `--run-id <completed-run-id>` to replay a particular run. Artifacts
+include feed XML, a database read snapshot and comparison JSON. Keep these local;
+do not commit or place them in `public/`. There is no apply flag, write repository,
+AI call, scheduler, new API route or migration. New RSS articles without stored
+embeddings are not clustered in 2a; the clustering replay uses historical vectors.
+See the migration document for exact parity results and reconstruction limitations.

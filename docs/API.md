@@ -226,3 +226,7 @@ latest ranked selection (up to 10), rather than accumulating prior-run items.
 Selection uses a soft cap of four per category; it fills remaining slots by score
 when diversity is insufficient. An empty selection clears that edition's items.
 Previously delivered email is not modified or resent by this operation.
+
+
+Python phase 2a adds a local CLI only. It adds no HTTP endpoints and changes no
+existing API contract or scheduler route. The TypeScript pipeline remains active.

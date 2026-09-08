@@ -1,7 +1,8 @@
-# Python migration — phases 0–1
+# Python migration — phases 0–2a
 
-Decision date: 2026-09-07. Scope: design plus one read-only vertical slice.
-No pipeline, user, admin, billing or delivery endpoint is ported in this phase.
+Initial decision date: 2026-09-07. Phase 2 scope revised by the founder on
+2026-09-08. Phase 2a now adds manual read-only pipeline replay alongside the
+original read API; no new pipeline HTTP endpoint is exposed.
 The Vercel deployment, its environment and schedulers are not changed.
 
 ## 1. Hosting recommendation
@@ -156,17 +157,77 @@ proving the new route locally. Existing Next.js API routes, Clerk UI, Vercel
 configuration, secrets and jobs remain untouched. Rollback is to unset that one
 variable and redeploy when an eventual opt-in deployment is authorized.
 
-## Proposed phases 2–4 — not authorized by this document
+## Revised phases 2–4 — founder authorization, 2026-09-08
 
-| Phase | Scope | Rough effort for one engineer | Exit evidence |
+The split removes duplicated cutover work from phase 2. Phase 4 already owns
+production scheduler deployment, sole-writer coordination and migration ownership.
+Phase 2 produces isolated, manually inspectable results, not authoritative writes.
+No hosting purchase, production scheduler change or irreversible action is authorized.
+
+| Phase | Scope | One-engineer planning estimate | Exit evidence |
 |---|---|---|---|
-| 2 | Port ingestion, normalization, embeddings/clustering, ranking, extraction/summarization and digest writes; retries, bounded concurrency, durable job/run ownership and one scheduler | Large: 8–12 engineering days | Real RSS/AI run, top-10/content parity, failure recovery, idempotent reruns, measured cost/runtime; never run two production writers |
-| 3 | Remaining public/history reads, user/preferences, email, admin/audit/editing and Stripe routes; Clerk verification before any protected route is exposed | Large: 10–15 days | Browser auth/admin tests, real authorized email, Stripe test Checkout→webhook→gating, contract parity and route-by-route rollback |
-| 4 | Auth/security hardening, rate limits/alerts, operational tests, deployment and scheduler cutover, migration ownership handoff, remove TS backend only after observation | Medium: 5–8 days plus 3–7 calendar days observing scheduled runs | Genuine scheduled executions, no duplicates, backup/restore and rollback rehearsal, one migration owner and one scheduler |
+| 2a | RSS normalization/fetch, cached embeddings, clustering and ranking in dry-run mode | 3–5 engineering days | Real feeds; exact same-input TS comparison and reconstruction of a recent production run |
+| 2b | Embedding provider plus extract-then-summarize and translation adapters, bounded retries and validation; sample outputs in local artifacts | 2–4 days | Real OpenAI sample calls; grounded quality, token cost and latency comparison |
+| 2c | Digest/category selection and complete manually triggered orchestration using isolated in-memory/local artifact outputs | 2–3 days | Full same-input TS/Python comparison, failure recovery and <300s real run |
+| 3 | Remaining reads, user/preferences, email, admin/audit/editing, billing and Clerk verification | 10–15 days (unchanged) | Browser auth/admin tests, authorized email, Stripe test flow and route parity |
+| 4 | Hardening, deployment, scheduler/sole-writer cutover, migration ownership and eventual TS retirement | 5–8 days plus 3–7 calendar observation days (unchanged) | Scheduled executions, backup/rollback rehearsal, one scheduler and one migration owner |
 
-Estimates include tests/documentation but depend on access, domain/Stripe setup
-and product decisions; they are planning ranges, not commitments. Telegram stays
-out of scope. Review these phases together before implementing any of them.
+Phase 2 totals **7–12 engineering days**, not a promise of elapsed agent runtime.
+2a's cost is mostly RSS/Atom field compatibility, repeatable-read snapshot reconstruction,
+ordered clustering/tie equivalence and real differential tests. 2b must port fact grounding,
+version handling, malformed-output rejection and translation recovery while measuring real
+provider behavior. 2c still needs a unified input snapshot, transient writes/output versions,
+category caps, retry boundaries and performance tuning even without production ownership.
+The original 8–12 day range overlapped phase 4; removing that overlap does not eliminate
+these porting/verification costs. Fresh embedding API work is assigned to 2b because
+"no AI calls" in 2a means only stored vectors can be exercised live.
+
+Phases 2a/2b/2c are authorized within these boundaries and independently reviewable.
+This task implements 2a. No new approval is needed for reversible implementation details.
+Phase 3 and production cutover remain separately scoped. Telegram remains excluded.
+
+## Phase 2a implementation and evidence
+
+- New domain/application/infrastructure modules under `backend/app/modules/`:
+  scraper, parser, dedup and ranking; composition/snapshot code under `app/pipeline/`.
+- Manual CLI only: `python -m app.pipeline.dry_run --output <local-directory>`.
+  It has no apply/write option and uses the existing READ ONLY PostgreSQL engine,
+  with an explicit READ ONLY transaction. It does not construct any OpenAI client.
+- HTTPX (already locked) fetches sources concurrently with per-source failure isolation,
+  a 20-second HTTP timeout and 5 MB decoded response cap. Standard-library XML parsing
+  supports RSS/RDF/Atom; DTD/entity declarations are rejected. No new dependency.
+- Preserve 150 selected articles, 0.83 cosine threshold, fixed existing centroids,
+  union-find transitivity, source-category candidate vote and current ranking formula.
+  Missing embeddings are explicitly deferred. No attempt to fix the known sabotage
+  duplicate while measuring migration parity.
+- `scripts/compare-python-pipeline.ts` invokes the real TS domain functions and installed
+  rss-parser on the exact same local snapshot/feed bytes. No database or AI access.
+
+Final live dry run: **7.661 seconds**, **15/15 feeds**, **926 articles** normalized.
+Every normalized external ID, URL, title, body and timestamp matches TS on those bytes.
+The original TS run fetched 928 articles earlier; feed churn explains the changing
+count, rather than claiming today's feed snapshot is the original one.
+
+Historical run `cmtsm5nwb0000ai5rgxr8wa7r` recorded 150 embedded articles,
+111 new stories, 18 existing-story attachments and 124 ranked stories. The reconstructed
+cohort reproduces all **111 stored groups and all 18 attachment destinations** exactly.
+Python and TS scores match for **all 124 stories** at the same frozen clock. All stored
+scores fall within scores computed at the original run's start/end times (recency decays
+during the run). Compact evidence: `verification/phase-2a.json`.
+
+Reconstruction limits: Story.pipelineRunId is not populated by the current writer,
+so cohort attribution uses creation/fetch timestamps. Historical membership/embedding/
+source-trust versions and ordering at equal publication times are not archived.
+The successful comparison is evidence for this real cohort, not proof for every possible
+historical run. The TS score oracle uses the same snapshot and a fixed clock. Future
+same-input 2b/2c runs should capture inputs before execution to remove that ambiguity.
+RSS malformed dates become null rather than JS Invalid Date, and unusual Atom XHTML
+markup may differ; the 15 current feeds have zero field differences. Parser tests cover
+invalid dates, fallback identity, namespaces and failure isolation.
+
+No shared data, schema, API routes, frontend configuration, schedulers or hosting changed.
+The 7.661s measurement excludes new embeddings and other AI stages and is **not** evidence
+that the complete future Python pipeline fits 300s. That is the 2c exit criterion.
 
 ## Verification record
 
@@ -198,4 +259,5 @@ product target.
 
 Local services remain available for inspection. No Vercel settings, remote
 services, schema, migrations, database roles or rows were changed in this phase.
-The current TS backend remains in place; phases 2–4 await separate authorization.
+The current TS backend remains in place. This historical phase-1 record predates
+the revised phase-2 authorization above.

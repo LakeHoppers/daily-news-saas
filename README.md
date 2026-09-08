@@ -82,3 +82,9 @@ npm run lint     # eslint
 Deployed to Vercel at [daily-news-saas.vercel.app](https://daily-news-saas.vercel.app) — daily pipeline via Vercel Cron, hourly delivery via GitHub Actions. Setup history and runtime measurements: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) (note: some of that doc's "pending activation" language predates the actual production deploy).
 
 Python migration phase 0–1: [decisions and verified slice](docs/PYTHON_MIGRATION.md), [backend setup](backend/README.md). The homepage opts into FastAPI with server-only `PYTHON_BACKEND_URL`; unset preserves the existing deployment.
+
+
+Python migration phase 2a now provides a manual read-only ingestion/clustering/ranking
+replay alongside the existing read API. See [backend commands](backend/README.md)
+and [migration plan and verification](docs/PYTHON_MIGRATION.md). Production pipeline
+execution remains TypeScript; Python makes no authoritative writes.
