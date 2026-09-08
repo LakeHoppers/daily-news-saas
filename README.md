@@ -17,12 +17,12 @@ Built for Turkish and English speakers living in or following Germany: expats, p
 |---|---|
 | Frontend | Next.js (App Router), TypeScript, Tailwind, shadcn/ui |
 | Backend | Next.js Route Handlers |
-| Database | PostgreSQL (Supabase) via Prisma ORM |
+| Database | PostgreSQL (Neon) via Prisma ORM |
 | Auth | Clerk |
 | Payments | Stripe |
 | AI | OpenAI (provider-abstracted; Claude/Gemini pluggable) |
 | Delivery | Email (WhatsApp possible later; Telegram cut from scope) |
-| Scheduling | Vercel Cron |
+| Scheduling | Vercel Cron (daily pipeline), GitHub Actions (hourly email) |
 | Deployment | Vercel |
 
 > **Note:** this project runs on Next.js 16 and Prisma 7, both of which have breaking changes versus older tutorials/training data — e.g. `middleware.ts` is now `proxy.ts`, and Prisma Client requires an explicit driver adapter (`@prisma/adapter-pg`). See `node_modules/next/dist/docs/` and `.agents/skills/prisma-upgrade-v7/` for the authoritative current-version behavior before assuming older conventions.
@@ -73,6 +73,10 @@ tests/         unit + integration tests
 
 ```bash
 npm run dev      # start dev server
-npm run build    # production build
+npm run build    # generate Prisma Client + production build
 npm run lint     # eslint
 ```
+
+Deployment setup, runtime measurements and remaining activation steps: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
+
+Python migration phase 0–1: [decisions and verified slice](docs/PYTHON_MIGRATION.md), [backend setup](backend/README.md). The homepage opts into FastAPI with server-only `PYTHON_BACKEND_URL`; unset preserves the existing deployment.

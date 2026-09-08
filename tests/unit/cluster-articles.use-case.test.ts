@@ -112,9 +112,39 @@ describe("ClusterArticlesUseCase", () => {
     const result = await useCase.execute();
     expect(result).toEqual({
       embedded: 0,
+      failed: 0,
       attachedToExisting: 0,
       newStories: 0,
       touchedStoryIds: [],
     });
   });
+});
+
+it("bounds embedding concurrency and isolates request/persistence failures", async () => {
+  const repository = new FakeRepository();
+  repository.articles = Array.from({ length: 40 }, (_, i) => makeArticle({ id: String(i), title: String(i) }));
+  let active = 0;
+  let peak = 0;
+  const save = repository.saveEmbedding.bind(repository);
+  repository.saveEmbedding = async (id, vector) => {
+    if (id === "1") throw new Error("database failure");
+    await save(id, vector);
+  };
+  const result = await new ClusterArticlesUseCase(repository, {
+    async embed(text) {
+      active++;
+      peak = Math.max(peak, active);
+      await new Promise((resolve) => setTimeout(resolve, 2));
+      active--;
+      if (text.startsWith("0\n")) throw new Error("429");
+      return [1, 0];
+    },
+  }).execute();
+  expect(peak).toBe(15);
+  expect(result.embedded).toBe(38);
+  expect(result.failed).toBe(2);
+  const clustered = repository.createdStories.flatMap((story) => story.articleIds);
+  expect(clustered).toHaveLength(38);
+  expect(clustered).not.toContain("0");
+  expect(clustered).not.toContain("1");
 });

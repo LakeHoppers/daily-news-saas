@@ -18,7 +18,7 @@ import { PrismaDigestRepository } from "@/modules/digest/infrastructure/prisma-d
 export interface PipelineRunSummary {
   pipelineRunId: string;
   fetch: { succeeded: number; failed: number; articlesFetched: number };
-  cluster: { embedded: number; attachedToExisting: number; newStories: number };
+  cluster: { embedded: number; failed: number; attachedToExisting: number; newStories: number };
   rank: { ranked: number };
   summarize: { summarized: number; failed: number };
   digest: { digestId: string; itemCount: number };
@@ -52,7 +52,7 @@ export async function runPipeline(): Promise<PipelineRunSummary> {
 
     const digestResult = await new BuildDigestUseCase(new PrismaDigestRepository()).execute();
 
-    const totalFailed = fetchResult.failed + summarizeResult.failed;
+    const totalFailed = fetchResult.failed + clusterResult.failed + summarizeResult.failed;
     const status =
       fetchResult.succeeded === 0
         ? "FAILED"
@@ -64,6 +64,7 @@ export async function runPipeline(): Promise<PipelineRunSummary> {
       fetch: fetchResult,
       cluster: {
         embedded: clusterResult.embedded,
+        failed: clusterResult.failed,
         attachedToExisting: clusterResult.attachedToExisting,
         newStories: clusterResult.newStories,
       },

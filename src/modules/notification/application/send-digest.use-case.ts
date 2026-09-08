@@ -27,7 +27,9 @@ export class SendDigestUseCase {
 
     for (const candidate of due) {
       const digest = await this.digestReader.getLatestDigest(candidate.favoriteCategories);
-      if (!digest || digest.items.length === 0) {
+      // Editions are keyed by UTC date throughout the digest module. Do not
+      // catch up with yesterday's edition while today's pipeline is pending.
+      if (!digest || digest.date !== now.toISOString().slice(0, 10) || digest.items.length === 0) {
         skipped++;
         continue;
       }

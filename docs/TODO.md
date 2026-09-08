@@ -341,11 +341,86 @@ Emre doesn't want Telegram integration. Do not build
 
 ## M9 — Hardening & launch
 - [ ] **Deploy to Vercel** — hard prerequisite for the cron schedules in
-      `vercel.json` to run on their own. Needs: a git remote (GitHub, since
-      this repo has no remote yet — only local commits), a Vercel account,
+      `vercel.json` to run on their own. Needs: a Vercel account (GitHub remote now exists at
+      `LakeHoppers/daily-news-saas`),
       and every `.env` var re-entered in the Vercel project's environment
       variables (they don't carry over from a local `.env` automatically)
 - [ ] Test coverage pass across all modules
 - [ ] Sentry (or equivalent) error alerting
 - [ ] Rate limiting on public routes
 - [ ] Soft launch
+
+## Deployment readiness — 2026-09-07
+- [x] Confirmed clean starting working tree and GitHub remote.
+- [x] Verified 69 tests across 17 files, ESLint, production build, and TypeScript.
+- [x] Build now runs `prisma generate` before `next build`, so fresh checkouts
+      do not depend on an ignored, locally generated client.
+- [x] Cron authentication rejects missing/blank configuration, including
+      `Bearer undefined`; seven regression cases cover the guard.
+- [ ] Vercel CLI login started; account authentication is pending. No deployment
+      or environment-variable transfer has occurred in this verification pass.
+- [ ] Resolve scheduler/plan compatibility: Vercel Hobby only supports daily
+      cron schedules; the configured hourly delivery schedule requires a
+      compatible plan or another scheduler. See
+      https://vercel.com/docs/cron-jobs/usage-and-pricing.
+- [ ] Resolve the existing single-request pipeline timeout risk before claiming
+      reliable automation; reducing summaries to 15 does not bound embedding time.
+- [ ] Verify a real scheduled execution after deployment; manual execution alone
+      is not proof that automatic scheduling works.
+
+Database is now Neon (fresh provision); earlier Supabase verification entries
+above are historical. Stripe and Resend-domain limitations remain unchanged.
+
+## Free-tier scheduling changes — 2026-09-07
+- [x] Fetch all RSS sources concurrently; preserve per-source failure logs and
+      wait for every source before surfacing log-persistence failures.
+- [x] Bound embeddings to 15 workers, reuse cached vectors, skip failed articles
+      without clustering them; expose `cluster.failed` in stats and partial status.
+      Previous embedding code had no per-article isolation; this adds it.
+- [x] Explicit Hobby Fluid Compute `maxDuration = 300` on pipeline cron route.
+- [x] Remove hourly delivery from Vercel crons; add configurable GitHub Actions
+      workflow using `secrets.CRON_SECRET` and `vars.PRODUCTION_URL`.
+- [x] 71 tests, lint, build, typecheck and actionlint pass.
+- [x] Live timed pipeline: **336.96s**, 495 articles, 379 embeddings, 335 new
+      stories, 15 summaries, 10 digest items, zero reported failures.
+- [ ] **Still exceeds Hobby timeout**: split pipeline into resumable bounded steps.
+- [ ] Authenticate GitHub and upload CRON_SECRET; upload was not possible yet.
+- [ ] Set PRODUCTION_URL after deployment; push workflow and verify scheduled run.
+
+See [DEPLOYMENT.md](DEPLOYMENT.md) for exact setup, evidence and remaining risks.
+This section supersedes the earlier sequential-fetch/embedding follow-ups and
+hourly-Vercel-schedule notes; historical verification records are retained.
+
+## Summarization concurrency and late delivery — 2026-09-07
+- [x] Five concurrent story workers, each extracting before summarizing; preserve
+      isolation for extraction, generation and persistence failures.
+- [x] Late hourly invocations catch up with local hour >= preferred hour.
+- [x] Fix real repository/fake mismatch: only status `sent` counts as received;
+      failed rows can retry. Skip stale editions using existing UTC digest dates.
+- [x] 83 tests / 18 files, lint, typecheck, production build pass. Tests cover
+      delayed and skipped hours, repeat runs, retries, next day, DST, concurrency.
+- [x] Live run `cmtrfbug500007y5ry8k85e6z`: **128.35s**; 496 fetched,
+      44 embedded, 32 new stories, 15 summaries, 10 selected digest items,
+      no reported failures. Margin: 171.65s under Hobby maxDuration.
+- [ ] Validate representative deployed daily runtime. This run reused more data
+      than the 336.96s baseline; do not attribute all improvement to concurrency.
+      **Splitting is no longer required by this measurement**; retain one stage.
+- [x] Vercel CLI sign-in confirmed. GitHub CLI remains unauthenticated.
+- [ ] Founder handles CRON_SECRET manually; set PRODUCTION_URL after deployment
+      and push workflow to default branch once GitHub access is available.
+
+These findings supersede the preceding split-required and exact-hour notes.
+Sequential reruns are deduplicated, but concurrent manual calls or an email-provider
+success followed by DB failure can still duplicate mail (atomic/provider
+idempotency remains separate hardening work).
+
+## Python migration phase 0–1 (2026-09-07)
+- [x] Hosting/ORM/migration/auth/layout decisions documented in PYTHON_MIGRATION.md.
+- [x] Read-only SQLAlchemy + FastAPI latest digest slice, 7 Python tests including
+      real Neon verification, and actual HTTP parity with the TS endpoint.
+- [x] Homepage HTTP path verified visually in a production-mode local Next server;
+      PYTHON_BACKEND_URL is opt-in so existing deployments keep working.
+- [x] 87 TS tests, lint, typecheck, build; Python Ruff checks pass.
+- [ ] Review phase 2–4 proposal before implementation; no other route ported yet.
+- [ ] Phase-2 writer follow-up: reruns accumulated 20 stored items in today's
+      edition despite selection cap 10. Read-only slice intentionally preserves it.

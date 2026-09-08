@@ -8,6 +8,9 @@ const MAX_ARTICLE_CONTENT_CHARS = 2000;
 // take 15-30 minutes. This is intentionally just a small buffer over 10 to
 // absorb a few failures, not a real backlog-clearing budget.
 const DEFAULT_STORY_LIMIT = 15;
+// Each worker makes one chat request at a time: extract, then summarize.
+// Five overlaps network latency without the 15-request embedding burst.
+const SUMMARIZATION_CONCURRENCY = 5;
 
 export interface SummarizeStoriesResult {
   summarized: number;
@@ -29,32 +32,39 @@ export class SummarizeStoryUseCase {
     let summarized = 0;
     let failed = 0;
 
-    for (const story of stories) {
-      try {
-        const { facts } = await this.factExtractor.extractFacts({
-          articles: story.articles.map((article) => ({
-            ...article,
-            content: article.content.slice(0, MAX_ARTICLE_CONTENT_CHARS),
-          })),
-        });
+    let nextStory = 0;
+    await Promise.all(Array.from(
+      { length: Math.min(SUMMARIZATION_CONCURRENCY, stories.length) },
+      async () => {
+        while (nextStory < stories.length) {
+          const story = stories[nextStory++];
+          try {
+            const { facts } = await this.factExtractor.extractFacts({
+              articles: story.articles.map((article) => ({
+                ...article,
+                content: article.content.slice(0, MAX_ARTICLE_CONTENT_CHARS),
+              })),
+            });
 
-        const output = await this.summarizer.summarize({
-          sourceFacts: facts,
-          sourceUrls: story.articles.map((article) => article.sourceUrl),
-          candidateCategory: story.candidateCategory,
-        });
+            const output = await this.summarizer.summarize({
+              sourceFacts: facts,
+              sourceUrls: story.articles.map((article) => article.sourceUrl),
+              candidateCategory: story.candidateCategory,
+            });
 
-        await this.repository.saveSummary(
-          story.storyId,
-          output,
-          this.providerName,
-          this.modelName,
-        );
-        summarized++;
-      } catch {
-        failed++;
-      }
-    }
+            await this.repository.saveSummary(
+              story.storyId,
+              output,
+              this.providerName,
+              this.modelName,
+            );
+            summarized++;
+          } catch {
+            failed++;
+          }
+        }
+      },
+    ));
 
     return { summarized, failed };
   }

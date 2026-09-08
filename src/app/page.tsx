@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { getLatestDigest } from "@/modules/digest/infrastructure/digest-view";
+import { getHomeDigest } from "@/shared/home-digest";
 import { CATEGORY_LABELS_TR } from "@/shared/category-labels";
 
 function formatTurkishDate(isoDate: string): string {
@@ -13,7 +13,7 @@ function formatTurkishDate(isoDate: string): string {
 }
 
 export default async function Home() {
-  const digest = await getLatestDigest();
+  const digest = await getHomeDigest();
 
   return (
     <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-8 px-4 py-16">

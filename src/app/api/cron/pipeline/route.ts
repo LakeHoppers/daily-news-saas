@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import { requireCronSecret, UnauthorizedError } from "@/shared/api-guards";
 import { runPipeline } from "@/pipeline/orchestrator";
 
+// Hobby maximum with Fluid Compute enabled (Vercel docs, September 2026).
+export const maxDuration = 300;
+
 async function handle(request: Request) {
   try {
     requireCronSecret(request);

@@ -106,3 +106,25 @@ describe("FetchArticlesUseCase", () => {
     expect(repository.savedArticles).toHaveLength(1);
   });
 });
+
+it("starts every source before waiting for any source to finish", async () => {
+  const repository = new FakeRepository();
+  repository.sources = Array.from({ length: 8 }, (_, i) => ({ id: String(i), url: String(i) }));
+  let started = 0;
+  let release!: () => void;
+  const gate = new Promise<void>((resolve) => { release = resolve; });
+  const pending = new FetchArticlesUseCase(repository, {
+    async fetch(url) {
+      started++;
+      await gate;
+      if (url === "0") throw new Error("unreachable");
+      return [article()];
+    },
+  }).execute("run");
+  await Promise.resolve();
+  const concurrent = started;
+  release();
+  expect(await pending).toEqual({ succeeded: 7, failed: 1, articlesFetched: 7 });
+  expect(concurrent).toBe(8);
+  expect(repository.logs).toHaveLength(8);
+});

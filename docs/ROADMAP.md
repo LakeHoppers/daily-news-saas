@@ -1,7 +1,7 @@
 # Roadmap
 
 ## M0 — Foundation ✅
-Next.js + TS + Tailwind + shadcn init, Prisma + Postgres (Supabase) wired,
+Next.js + TS + Tailwind + shadcn init, Prisma + Postgres wired (now Neon),
 Clerk auth wired, repo/folder structure, CI lint/test/typecheck.
 
 ## M1 — Ingestion pipeline ✅
@@ -41,7 +41,9 @@ Source management UI, force refresh, summary editing (versioned), pipeline
 run/log viewer, audit log.
 
 ## M9 — Hardening & launch
-Test coverage across modules, error alerting (Sentry), rate limiting, docs
+First deploy and verify automatic scheduling, resolving hourly cron plan
+compatibility and the single-request pipeline timeout risk. Then test coverage
+across modules, error alerting (Sentry), rate limiting, docs
 finalized, soft launch to a small user group.
 
 ## Deferred to Emre (not blocking other milestones)
@@ -64,3 +66,13 @@ finalized, soft launch to a small user group.
 | GDPR / data privacy | Minimal PII, Clerk EU data residency, clear privacy policy |
 | Turkish translation nuance | Prompt glossary for German proper nouns/political terms + admin edit backstop |
 | Single AI provider dependency | Provider abstraction enables failover to Claude/Gemini |
+
+### Free-tier runtime verification
+Hourly delivery workflow implemented using GitHub Actions (remote secret/URL and
+activation pending). Five-worker summarization reduced the latest live run to 128.35s versus
+Hobby's 300s limit (different embedding workload from the earlier 336.96s run).
+Keep the single-stage pipeline for now and validate deployed runtime. Delivery
+catches up after the preferred hour and deduplicates successful sends.
+See [DEPLOYMENT.md](DEPLOYMENT.md).
+
+Python migration phases 0–1 are locally verified. Proposed phases 2–4 (not yet authorized) and scope/effort estimates are in [PYTHON_MIGRATION.md](PYTHON_MIGRATION.md).

@@ -20,18 +20,18 @@ export class FetchArticlesUseCase {
     let failed = 0;
     let articlesFetched = 0;
 
-    for (const source of sources) {
+    const results = await Promise.allSettled(sources.map(async (source) => {
       try {
         const articles = await this.rssFetcher.fetch(source.url);
         for (const article of articles) {
           await this.repository.upsertRawArticle(source.id, article);
         }
-        articlesFetched += articles.length;
-        succeeded++;
         await this.repository.logScrapeResult(pipelineRunId, source.id, {
           success: true,
           articleCount: articles.length,
         });
+        articlesFetched += articles.length;
+        succeeded++;
       } catch (err) {
         failed++;
         await this.repository.logScrapeResult(pipelineRunId, source.id, {
@@ -40,7 +40,10 @@ export class FetchArticlesUseCase {
           error: err instanceof Error ? err.message : String(err),
         });
       }
-    }
+    }));
+    // Finish every source before surfacing a failure to persist its scrape log.
+    const rejected = results.find((result) => result.status === "rejected");
+    if (rejected?.status === "rejected") throw rejected.reason;
 
     return { succeeded, failed, articlesFetched };
   }

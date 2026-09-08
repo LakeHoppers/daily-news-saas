@@ -138,3 +138,46 @@ describe("SummarizeStoryUseCase", () => {
     expect(await useCase.execute()).toEqual({ summarized: 0, failed: 0 });
   });
 });
+
+it("bounds chat requests at five, keeps extraction before generation, and isolates failures", async () => {
+  const repository = new FakeRepository();
+  repository.stories = Array.from({ length: 15 }, (_, i) => ({
+    storyId: String(i), candidateCategory: "SOCIETY",
+    articles: [{ title: String(i), content: "text", sourceUrl: "https://example.de/" + i }],
+  }));
+  let active = 0;
+  let peak = 0;
+  const extracted = new Set<string>();
+  async function request() {
+    active++;
+    peak = Math.max(peak, active);
+    await new Promise((resolve) => setTimeout(resolve, 2));
+    active--;
+  }
+  const save = repository.saveSummary.bind(repository);
+  repository.saveSummary = async (...args) => {
+    if (args[0] === "2") throw new Error("save failed");
+    await save(...args);
+  };
+  const result = await new SummarizeStoryUseCase(repository, {
+    async extractFacts(input) {
+      const id = input.articles[0].title;
+      await request();
+      if (id === "0") throw new Error("extract failed");
+      extracted.add(id);
+      return { facts: [id] };
+    },
+  }, {
+    async summarize(input) {
+      const id = input.sourceFacts[0];
+      expect(extracted.has(id)).toBe(true);
+      await request();
+      if (id === "1") throw new Error("summary failed");
+      return SAMPLE_OUTPUT;
+    },
+  }, "openai", "test").execute();
+  expect(peak).toBe(5);
+  expect(result).toEqual({ summarized: 12, failed: 3 });
+  expect(repository.saved.map((s) => s.storyId)).not.toContain("0");
+  expect(repository.saved).toHaveLength(12);
+});

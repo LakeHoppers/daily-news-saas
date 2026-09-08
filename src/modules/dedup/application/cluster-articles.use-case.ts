@@ -6,12 +6,14 @@ import {
 } from "../domain/clustering";
 import type { DedupRepository, UnclusteredArticleRecord } from "./ports";
 
+const EMBEDDING_CONCURRENCY = 15;
 const SIMILARITY_THRESHOLD = 0.83;
 const EXISTING_STORY_WINDOW_HOURS = 48;
 const MAX_EMBEDDING_INPUT_CHARS = 4000;
 
 export interface ClusterArticlesResult {
   embedded: number;
+  failed: number;
   attachedToExisting: number;
   newStories: number;
   touchedStoryIds: string[];
@@ -26,25 +28,35 @@ export class ClusterArticlesUseCase {
   async execute(): Promise<ClusterArticlesResult> {
     const articles = await this.repository.getUnclusteredArticles();
     if (articles.length === 0) {
-      return { embedded: 0, attachedToExisting: 0, newStories: 0, touchedStoryIds: [] };
+      return { embedded: 0, failed: 0, attachedToExisting: 0, newStories: 0, touchedStoryIds: [] };
     }
 
     const embeddings = new Map<string, number[]>();
     let embedded = 0;
-    for (const article of articles) {
-      if (article.existingEmbedding.length > 0) {
-        embeddings.set(article.id, article.existingEmbedding);
-        continue;
-      }
-      const text = `${article.title}\n${article.rawContent}`.slice(
-        0,
-        MAX_EMBEDDING_INPUT_CHARS,
-      );
-      const embedding = await this.embedder.embed(text);
-      embeddings.set(article.id, embedding);
-      await this.repository.saveEmbedding(article.id, embedding);
-      embedded++;
-    }
+    let failed = 0;
+    let nextArticle = 0;
+    await Promise.all(Array.from(
+      { length: Math.min(EMBEDDING_CONCURRENCY, articles.length) },
+      async () => {
+        while (nextArticle < articles.length) {
+          const article = articles[nextArticle++];
+          if (article.existingEmbedding.length > 0) {
+            embeddings.set(article.id, article.existingEmbedding);
+            continue;
+          }
+          try {
+            const text = `${article.title}\n${article.rawContent}`.slice(0, MAX_EMBEDDING_INPUT_CHARS);
+            const embedding = await this.embedder.embed(text);
+            await this.repository.saveEmbedding(article.id, embedding);
+            embeddings.set(article.id, embedding);
+            embedded++;
+          } catch {
+            // Leave this article unclustered so a subsequent run can retry it.
+            failed++;
+          }
+        }
+      },
+    ));
 
     const existingCentroids = await this.repository.getRecentStoryCentroids(
       EXISTING_STORY_WINDOW_HOURS,
@@ -55,7 +67,8 @@ export class ClusterArticlesUseCase {
     let attachedToExisting = 0;
 
     for (const article of articles) {
-      const embedding = embeddings.get(article.id)!;
+      const embedding = embeddings.get(article.id);
+      if (!embedding) continue;
       const matchedStoryId = findBestCentroidMatch(
         embedding,
         existingCentroids,
@@ -91,6 +104,7 @@ export class ClusterArticlesUseCase {
 
     return {
       embedded,
+      failed,
       attachedToExisting,
       newStories,
       touchedStoryIds: [...touchedStoryIds],

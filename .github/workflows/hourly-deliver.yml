@@ -1,0 +1,43 @@
+name: Hourly digest delivery
+
+on:
+  schedule:
+    - cron: "0 * * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: hourly-digest-delivery
+  cancel-in-progress: false
+
+jobs:
+  deliver:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    env:
+      PRODUCTION_URL: ${{ vars.PRODUCTION_URL }}
+      CRON_SECRET: ${{ secrets.CRON_SECRET }}
+    steps:
+      - name: Invoke production delivery
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "$CRON_SECRET" || -z "$PRODUCTION_URL" ]]; then
+            echo "::error::Configure the CRON_SECRET repository secret and PRODUCTION_URL repository variable."
+            exit 1
+          fi
+          if [[ ! "$PRODUCTION_URL" =~ ^https://[a-zA-Z0-9.-]+/?$ ]]; then
+            echo "::error::PRODUCTION_URL must be an HTTPS origin without a path."
+            exit 1
+          fi
+          # Do not follow redirects or retry: the request can already have sent email.
+          status=$(curl --silent --show-error --output delivery-result.json \
+            --write-out '%{http_code}' --connect-timeout 15 --max-time 300 \
+            --header "Authorization: Bearer $CRON_SECRET" \
+            "${PRODUCTION_URL%/}/api/cron/deliver")
+          if [[ "$status" != "200" ]]; then
+            echo "::error::Delivery endpoint returned HTTP $status."
+            exit 1
+          fi
+          jq -e '(.delivered | type == "number") and (.skipped | type == "number") and (.failed == 0)' delivery-result.json > /dev/null

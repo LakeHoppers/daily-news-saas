@@ -21,7 +21,8 @@ to `User.email`. Telegram routes are cut from scope entirely.
 - Cron/internal routes require header `Authorization: Bearer $CRON_SECRET`
   (this is Vercel Cron's own convention — it adds this header automatically
   when a `CRON_SECRET` env var is set, invoking the path with `GET`);
-  otherwise `401`. These are never callable from the browser.
+  otherwise `401`, including when `CRON_SECRET` is missing or blank.
+  These endpoints are intended for trusted schedulers/operators.
 - Dates are ISO 8601. `category` values are the `Category` enum
   (`POLITICS`, `ECONOMY`, `IMMIGRATION`, `BERLIN`, `TECHNOLOGY`, `EUROPE`,
   `BUSINESS`, `SOCIETY`, `SPORTS`).
@@ -180,12 +181,12 @@ Never called from the browser — protected by `Authorization: Bearer $CRON_SECR
 ### `GET /api/cron/pipeline` (also accepts `POST` for manual triggering)
 Triggers the full daily pipeline — fetch, dedup/cluster, rank, summarize,
 build digest (Vercel Cron target, scheduled daily at 05:00 UTC in
-`vercel.json`). Response `202`:
+`vercel.json`, with a 300-second maximum requiring Fluid Compute). Response `202`:
 ```json
 {
   "pipelineRunId": "string",
   "fetch": { "succeeded": 8, "failed": 0, "articlesFetched": 500 },
-  "cluster": { "embedded": 500, "attachedToExisting": 12, "newStories": 340 },
+  "cluster": { "embedded": 500, "failed": 0, "attachedToExisting": 12, "newStories": 340 },
   "rank": { "ranked": 352 },
   "summarize": { "summarized": 340, "failed": 0 },
   "digest": { "digestId": "string", "itemCount": 10 }
@@ -194,8 +195,11 @@ build digest (Vercel Cron target, scheduled daily at 05:00 UTC in
 
 ### `GET /api/cron/deliver` (also accepts `POST` for manual triggering)
 Triggers digest delivery to every non-paused user whose *local* hour
-(computed from their `timezone`) matches their `digestHour` right now.
-Scheduled hourly (`0 * * * *` in `vercel.json`) — necessarily more frequent
+(computed from their `timezone`) is at or past their `digestHour`. Only the
+current UTC-dated edition is eligible. Previously successful deliveries are
+skipped; failed deliveries can retry on a later invocation.
+Scheduled hourly (`0 * * * *` in `.github/workflows/hourly-deliver.yml`;
+requires repository secret `CRON_SECRET` and variable `PRODUCTION_URL`) — necessarily more frequent
 than the once-daily pipeline cron, since it has to catch each user's local
 delivery hour as it comes around. Sends each user their personal digest
 (filtered to `favoriteCategories`, or the full digest if none are set) via
@@ -207,3 +211,11 @@ the same digest. Response `200`:
 
 ~~`POST /api/webhooks/telegram`~~ — cut from scope (2026-07-27), will not be
 built. See M6 in ROADMAP.md.
+
+## Python transition (phase 1)
+A separate FastAPI service implements only `GET /api/digests/latest` with the same
+actual JSON shape, including `digestId`; 404 is `{ "error": "No digest available
+yet" }`. Database errors return sanitized 503. The current TS route stays intact.
+Contrary to older preview wording above, the existing implementation returns all
+stored items publicly; Python preserves that contract. Homepage HTTP opt-in and
+verification: [PYTHON_MIGRATION.md](PYTHON_MIGRATION.md).

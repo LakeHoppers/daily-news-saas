@@ -27,7 +27,7 @@ export class PrismaNotificationRepository implements NotificationRepository {
     const existing = await prisma.digestDelivery.findUnique({
       where: { digestId_userId_channel: { digestId, userId, channel: "EMAIL" } },
     });
-    return existing !== null;
+    return existing?.status === "sent";
   }
 
   async recordDelivery(input: {

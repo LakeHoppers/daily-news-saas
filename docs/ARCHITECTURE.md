@@ -193,3 +193,27 @@ Before changing anything Next.js- or Prisma-specific, check
 `node_modules/next/dist/docs/` and `.agents/skills/prisma-*/` — they ship
 with the exact installed version and are more reliable than memorized
 conventions.
+
+## Deployment verification (2026-09-07)
+Runtime PostgreSQL is now hosted on Neon following fresh provisioning. Historical
+Supabase references above describe the original setup. Production builds generate
+Prisma Client explicitly. Deployment and actual scheduled executions remain
+unverified; hourly delivery is incompatible with Vercel Hobby's daily-only cron
+frequency. The full pipeline still executes inside a single request.
+
+RSS sources now execute concurrently; embedding workers are bounded at 15 and
+isolate article failures (reported as `cluster.failed`). Story assignment remains
+in input order after embeddings settle. Hourly delivery is now triggered by
+GitHub Actions; only the daily pipeline uses Vercel Cron. See DEPLOYMENT.md:
+the measured 336.96-second pipeline still exceeds Hobby's 300-second limit.
+
+### Summarization and delivery follow-up (2026-09-07)
+Five story workers now perform extraction → generation → persistence, preserving
+per-story failure isolation. The latest live run took 128.35s (44 new embeddings,
+15 summaries) versus the previous 336.96s (379 embeddings, 15 summaries); keep the
+single-stage pipeline pending deployed verification. Delivery uses local hour >=
+preferred hour, a current UTC edition check, and successful-delivery deduplication.
+Failed records no longer count as received. This supersedes the timeout conclusion
+and exact-hour delivery descriptions above. See DEPLOYMENT.md for evidence/limits.
+
+Phase-1 Python read service now lives in `backend/`, preserving domain/application/infrastructure boundaries. Next.js homepage opts into its HTTP endpoint via `PYTHON_BACKEND_URL`; Prisma remains schema authority. See [PYTHON_MIGRATION.md](PYTHON_MIGRATION.md).

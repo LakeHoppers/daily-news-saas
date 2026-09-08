@@ -96,9 +96,9 @@ describe("SendDigestUseCase", () => {
     ]);
   });
 
-  it("skips candidates whose local hour doesn't match their digestHour", async () => {
+  it("skips candidates before their preferred local hour", async () => {
     const repository = new FakeRepository();
-    repository.candidates = [candidate({ digestHour: 7 })]; // not due at NOW in Berlin
+    repository.candidates = [candidate({ digestHour: 14 })]; // not due at NOW in Berlin
     const emailSender = new FakeEmailSender();
 
     const result = await new SendDigestUseCase(
@@ -159,4 +159,42 @@ describe("SendDigestUseCase", () => {
       { digestId: "digest-1", userId: "ok", status: "sent" },
     ]);
   });
+});
+
+it("delivers after a skipped scheduled hour and skips subsequent late runs", async () => {
+  const repository = new FakeRepository();
+  repository.candidates = [candidate({ digestHour: 9 })];
+  const sender = new FakeEmailSender();
+  const useCase = new SendDigestUseCase(repository, new FakeDigestReader(DIGEST), sender);
+  expect(await useCase.execute(new Date("2026-01-15T12:17:00Z"))).toEqual({ delivered: 1, failed: 0, skipped: 0 });
+  expect(await useCase.execute(new Date("2026-01-15T13:17:00Z"))).toEqual({ delivered: 0, failed: 0, skipped: 1 });
+  expect(sender.sentTo).toHaveLength(1);
+});
+it("does not send an old edition when today's digest is missing", async () => {
+  const repository = new FakeRepository();
+  repository.candidates = [candidate({ digestHour: 9 })];
+  const sender = new FakeEmailSender();
+  const useCase = new SendDigestUseCase(repository, new FakeDigestReader({ ...DIGEST, date: "2026-01-14" }), sender);
+  expect(await useCase.execute(NOW)).toEqual({ delivered: 0, failed: 0, skipped: 1 });
+  expect(sender.sentTo).toHaveLength(0);
+});
+it("retries an unsuccessful send on a later invocation", async () => {
+  const repository = new FakeRepository();
+  repository.candidates = [candidate({ digestHour: 9 })];
+  const failures = new Set(["user1@example.de"]);
+  const sender = new FakeEmailSender(failures);
+  const useCase = new SendDigestUseCase(repository, new FakeDigestReader(DIGEST), sender);
+  expect((await useCase.execute(NOW)).failed).toBe(1);
+  failures.clear();
+  expect((await useCase.execute(new Date("2026-01-15T13:17:00Z"))).delivered).toBe(1);
+  expect((await useCase.execute(new Date("2026-01-15T14:17:00Z"))).skipped).toBe(1);
+});
+
+it("allows the next day's edition after yesterday was delivered", async () => {
+  const repository = new FakeRepository();
+  repository.candidates = [candidate({ digestHour: 9 })];
+  repository.delivered.add("digest-1:user-1");
+  const sender = new FakeEmailSender();
+  const useCase = new SendDigestUseCase(repository, new FakeDigestReader({ ...DIGEST, digestId: "digest-2", date: "2026-01-16" }), sender);
+  expect(await useCase.execute(new Date("2026-01-16T12:17:00Z"))).toEqual({ delivered: 1, failed: 0, skipped: 0 });
 });

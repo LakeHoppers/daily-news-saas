@@ -49,7 +49,8 @@ export async function getOrCreateCurrentUser() {
  */
 export function requireCronSecret(request: Request): void {
   const provided = request.headers.get("authorization");
-  if (provided !== `Bearer ${process.env.CRON_SECRET}`) {
+  const secret = process.env.CRON_SECRET;
+  if (!secret?.trim() || provided !== `Bearer ${secret}`) {
     throw new UnauthorizedError("Invalid or missing cron secret");
   }
 }
