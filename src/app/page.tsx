@@ -1,6 +1,5 @@
 import type { CSSProperties } from "react";
 import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getHomeDigest } from "@/shared/home-digest";
 import { CATEGORY_LABELS_EN, CATEGORY_LABELS_TR } from "@/shared/category-labels";
@@ -118,16 +117,6 @@ export default async function Home({
                 <span className="font-semibold text-foreground">{copy.whyItMatters}</span>
                 {item.whyItMatters}
               </div>
-
-              {item.tags.length > 0 && (
-                <div className="flex flex-wrap gap-1.5 pt-1">
-                  {item.tags.map((tag) => (
-                    <Badge key={tag} variant="outline" className="text-[11px] font-normal">
-                      {tag}
-                    </Badge>
-                  ))}
-                </div>
-              )}
 
               {item.sourceUrls.length > 0 && (
                 <div className="flex flex-wrap gap-x-3 gap-y-1 pt-1 text-xs text-muted-foreground">
