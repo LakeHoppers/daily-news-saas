@@ -503,6 +503,28 @@ follow-ups in this log are superseded by this fix.
       weren't. Data/`Summary.tags` untouched; either restyle as plain
       non-interactive text or make them a real tag-filter feature later.
 
+## Category misassignment fix — 2026-09-08
+- [x] Spotted in production: a Sachsen-Anhalt election story showed as
+      ECONOMY, and general-industry stories showed as BERLIN. Root cause:
+      `pickCategory()` (clustering) picks the majority *source's* fixed
+      category among a story's articles, and the summarizer prompt told the
+      AI to "prefer the candidate category unless clearly wrong" — so a
+      Tagesspiegel/Handelsblatt byline kept steering unrelated stories into
+      BERLIN/ECONOMY regardless of actual content.
+- [x] Flipped the summarizer prompt: classify strictly from the facts, treat
+      the candidate as a weak fallback hint only for genuinely ambiguous
+      cases; clarified BERLIN means the story is actually about Berlin, not
+      merely reported by a Berlin outlet.
+- [ ] **Forward-looking only** — already-published stories keep their
+      existing (possibly wrong) category unless manually corrected via
+      `/admin`. Not retroactively fixed.
+- [ ] Underlying structural weakness not addressed: `pickCategory()` still
+      assigns a *candidate* category from source tags before the AI ever
+      sees the story, for every source (not just multi-topic outlets). A
+      real content classifier at clustering time (instead of source-vote)
+      would be a more durable fix if this keeps recurring — flag to Codex if
+      the prompt fix alone doesn't hold up.
+
 ## Known correctness gaps in the translator (flagged by Codex review, 2026-09-08)
 - [ ] **Failed translations never retry.** `TranslateStoriesUseCase` only ever
       runs against the current run's freshly-selected digest story ids. Since
