@@ -14,6 +14,27 @@ import { OpenAIFactExtractor } from "@/modules/ai/providers/openai-fact-extracto
 import { OpenAISummarizer, OPENAI_SUMMARIZER_MODEL } from "@/modules/ai/providers/openai-summarizer";
 import { BuildDigestUseCase } from "@/modules/digest/application/build-digest.use-case";
 import { PrismaDigestRepository } from "@/modules/digest/infrastructure/prisma-digest-repository";
+import { ResendEmailSender } from "@/modules/notification/infrastructure/resend-email-sender";
+import {
+  buildPipelineAlertEmail,
+  type PipelineAlertInput,
+} from "@/modules/notification/domain/pipeline-alert-email";
+
+/**
+ * Best-effort internal alert on a failed/partial run. Never throws — an
+ * alert delivery problem must not mask or replace the actual pipeline
+ * result. No-ops quietly if PIPELINE_ALERT_EMAIL isn't configured.
+ */
+async function sendPipelineAlert(input: PipelineAlertInput): Promise<void> {
+  const to = process.env.PIPELINE_ALERT_EMAIL;
+  if (!to) return;
+  try {
+    const email = buildPipelineAlertEmail(input);
+    await new ResendEmailSender().send({ to, ...email });
+  } catch (err) {
+    console.error("Failed to send pipeline alert email:", err);
+  }
+}
 
 export interface PipelineRunSummary {
   pipelineRunId: string;
@@ -78,16 +99,18 @@ export async function runPipeline(): Promise<PipelineRunSummary> {
       data: { status, finishedAt: new Date(), stats: stats as unknown as Prisma.InputJsonValue },
     });
 
+    if (status !== "SUCCESS") {
+      await sendPipelineAlert({ pipelineRunId: run.id, status, stats });
+    }
+
     return { pipelineRunId: run.id, ...stats };
   } catch (err) {
+    const error = err instanceof Error ? err.message : String(err);
     await prisma.pipelineRun.update({
       where: { id: run.id },
-      data: {
-        status: "FAILED",
-        finishedAt: new Date(),
-        stats: { error: err instanceof Error ? err.message : String(err) },
-      },
+      data: { status: "FAILED", finishedAt: new Date(), stats: { error } },
     });
+    await sendPipelineAlert({ pipelineRunId: run.id, status: "FAILED", error });
     throw err;
   }
 }
