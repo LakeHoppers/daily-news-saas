@@ -21,7 +21,7 @@ export default async function Home() {
       <div className="flex flex-col gap-4">
         <div className="inline-flex w-fit items-center gap-2 text-xs font-medium tracking-wide text-muted-foreground uppercase">
           <span className="h-1.5 w-1.5 rounded-full bg-foreground/50" />
-          MVP altyapısı kuruluyor
+          Otomatik. Her sabah. Güvenilir.
         </div>
         <h1 className="font-heading text-4xl leading-[1.1] font-medium text-balance sm:text-5xl">
           Almanya&apos;dan her sabah, Türkçe özet.
