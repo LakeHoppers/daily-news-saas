@@ -1,0 +1,52 @@
+{
+  "date": "2026-09-08",
+  "phase2b": {
+    "stories": 3,
+    "python_seconds": 8.265412375010783,
+    "typescript_seconds": 7.040568291,
+    "python_estimated_usd": 0.00192462,
+    "typescript_estimated_usd": 0.00192222,
+    "failures": 0,
+    "quality_regression": "Prison-attack mistranslation found; targeted repeat preserves allegation correctly after prompt clarification"
+  },
+  "phase2c": {
+    "input_identical": true,
+    "input_sha256": "da248f9f08b1285be26a1d9870ff7882fff8dd5928744b0fc6c020c0eaa51946",
+    "cluster_groups_identical": true,
+    "ranking_identical": true,
+    "selected_story_ids_identical": true,
+    "summary_category_differences": [
+      "local-456b73f22ed431b9d260f377"
+    ],
+    "python_seconds": 23.602325749990996,
+    "typescript_seconds_excluding_rss_download": 22.01729225,
+    "python_estimated_usd": 0.00607123,
+    "typescript_estimated_usd": 0.00607558,
+    "python_calls": 190,
+    "typescript_calls": 190,
+    "groups": 139,
+    "digest_count": 10,
+    "category_counts": {
+      "BUSINESS": 1,
+      "ECONOMY": 3,
+      "POLITICS": 4,
+      "SOCIETY": 2
+    }
+  },
+  "scope": {
+    "shared_database_writes": 0,
+    "scheduling_changes": false,
+    "initial_pipeline_state": "empty local artifact state in both languages",
+    "python_includes_fresh_rss_download": true,
+    "typescript_uses_identical_frozen_feed_input": true
+  },
+  "checks": {
+    "typescript_tests": 118,
+    "python_tests_including_live": 31,
+    "lint": "passed",
+    "typecheck": "passed",
+    "ruff_check_and_format": "passed",
+    "production_build": "passed",
+    "completed_resume_ai_calls": 0
+  }
+}

@@ -230,3 +230,9 @@ Previously delivered email is not modified or resent by this operation.
 
 Python phase 2a adds a local CLI only. It adds no HTTP endpoints and changes no
 existing API contract or scheduler route. The TypeScript pipeline remains active.
+
+
+Phases 2b–2c add manual Python AI/full-pipeline verification commands only. The
+local orchestrator uses isolated JSON state, dependency-injected AI ports and no
+production write repository. HTTP contracts, frontend behavior and production
+scheduling are unchanged. See PYTHON_PIPELINE_VERIFICATION.md for evidence.

@@ -88,3 +88,9 @@ Python migration phase 2a now provides a manual read-only ingestion/clustering/r
 replay alongside the existing read API. See [backend commands](backend/README.md)
 and [migration plan and verification](docs/PYTHON_MIGRATION.md). Production pipeline
 execution remains TypeScript; Python makes no authoritative writes.
+
+
+Python phases 2b–2c now include real AI adapters and a complete manual pipeline
+with local-only checkpoint output. Production still runs the TypeScript pipeline.
+See docs/PYTHON_PIPELINE_VERIFICATION.md (from the repo root) for commands,
+real same-input comparisons, cost/runtime evidence and recovery limitations.

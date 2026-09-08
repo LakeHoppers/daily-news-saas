@@ -83,3 +83,9 @@ Python migration phases 0–1 are locally verified. Proposed phases 2–4 (not y
 2b covers real AI adapters/samples; 2c covers manual full runs with isolated output.
 Production scheduler and authoritative writer cutover remain phase 4. Current
 estimates: 2a 3–5, 2b 2–4, 2c 2–3 engineering days; see PYTHON_MIGRATION.md.
+
+
+Phases 2b–2c add manual Python AI/full-pipeline verification commands only. The
+local orchestrator uses isolated JSON state, dependency-injected AI ports and no
+production write repository. HTTP contracts, frontend behavior and production
+scheduling are unchanged. See PYTHON_PIPELINE_VERIFICATION.md for evidence.

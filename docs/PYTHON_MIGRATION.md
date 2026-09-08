@@ -1,4 +1,4 @@
-# Python migration — phases 0–2a
+# Python migration — phases 0–2c
 
 Initial decision date: 2026-09-07. Phase 2 scope revised by the founder on
 2026-09-08. Phase 2a now adds manual read-only pipeline replay alongside the
@@ -183,7 +183,7 @@ these porting/verification costs. Fresh embedding API work is assigned to 2b bec
 "no AI calls" in 2a means only stored vectors can be exercised live.
 
 Phases 2a/2b/2c are authorized within these boundaries and independently reviewable.
-This task implements 2a. No new approval is needed for reversible implementation details.
+2a is approved; 2b and 2c are implemented and live-verified under the same boundaries. No new approval is needed for reversible implementation details.
 Phase 3 and production cutover remain separately scoped. Telegram remains excluded.
 
 ## Phase 2a implementation and evidence
@@ -261,3 +261,14 @@ Local services remain available for inspection. No Vercel settings, remote
 services, schema, migrations, database roles or rows were changed in this phase.
 The current TS backend remains in place. This historical phase-1 record predates
 the revised phase-2 authorization above.
+
+
+## Phases 2b–2c completion
+
+The founder authorized uninterrupted work through 2c. AI ports/adapters, bounded
+workers, strict response validation, local checkpoints and full digest assembly
+are implemented. Three live samples and a full Python/TS same-input live run were
+verified. Full Python elapsed time: 23.602s, 150 embeddings, 15 summaries, ten
+translations, no failed stages. Details and qualification of quality/runtime claims
+are in PYTHON_PIPELINE_VERIFICATION.md. Only phase 4 may change production ownership
+or scheduling; no such change is included here.

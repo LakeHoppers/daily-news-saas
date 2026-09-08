@@ -63,3 +63,9 @@ do not commit or place them in `public/`. There is no apply flag, write reposito
 AI call, scheduler, new API route or migration. New RSS articles without stored
 embeddings are not clustered in 2a; the clustering replay uses historical vectors.
 See the migration document for exact parity results and reconstruction limitations.
+
+
+Python phases 2b–2c now include real AI adapters and a complete manual pipeline
+with local-only checkpoint output. Production still runs the TypeScript pipeline.
+See docs/PYTHON_PIPELINE_VERIFICATION.md (from the repo root) for commands,
+real same-input comparisons, cost/runtime evidence and recovery limitations.

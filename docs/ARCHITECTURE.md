@@ -237,3 +237,9 @@ Its manual pipeline runner reads a repeatable-read, read-only snapshot and produ
 local plans; it cannot persist pipeline output. Stored embeddings are reused without
 AI calls. Production orchestration remains TypeScript. See PYTHON_MIGRATION.md for
 comparison evidence and the separate phase-4 scheduler/authoritative-write boundary.
+
+
+Phases 2b–2c add manual Python AI/full-pipeline verification commands only. The
+local orchestrator uses isolated JSON state, dependency-injected AI ports and no
+production write repository. HTTP contracts, frontend behavior and production
+scheduling are unchanged. See PYTHON_PIPELINE_VERIFICATION.md for evidence.

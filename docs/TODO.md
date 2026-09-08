@@ -619,10 +619,27 @@ domain later anyway.
 - [x] Real dry-run parity: 15 feeds, 926 items; all normalized fields match TS.
       150 historical articles reproduce 111 stored clusters and 18 attachments;
       all 124 ranking scores match the TS oracle. 7.661s, zero AI calls/writes.
-- [ ] 2b: OpenAI embeddings/summarization/translation sample verification.
-- [ ] 2c: full manual isolated-output orchestration and real <300s timing.
+- [x] 2b: OpenAI embeddings/summarization/translation sample verification.
+- [x] 2c: full manual isolated-output orchestration and real <300s timing.
 - [ ] 4: production scheduling/sole writer, deployment and migrations cutover;
       explicitly not part of phase 2.
 
 Phase 2a final checks: 118 TS tests and 18 Python tests (including both live
 read-only checks) pass; Ruff check/format, ESLint, typecheck and production build pass.
+
+
+## Python phases 2b–2c — 2026-09-08
+- [x] Live Python and TS AI samples, output validation and bounded transient retry.
+- [x] Complete local-only pipeline: fresh RSS, 150 embeddings, 139 clusters,
+      15 summaries, ten-story digest and ten translations; 23.602s, zero failures.
+- [x] Independent live TS run matches all groups, ranks and ten selected IDs.
+- [x] Regression tests for worker limits, cancellation, invalid output, category
+      balance, latest-version translation retry and partial-run resume.
+- [ ] Broader editorial QA: rare semantic errors, generic implications, paragraph
+      count and English words in Turkish headlines remain model-quality risks.
+- [ ] Production persistence, distributed job ownership, scheduling and host runtime
+      measurements remain phase 4; no Python shared-table writes were introduced.
+See PYTHON_PIPELINE_VERIFICATION.md and verification/phase-2bc.json for evidence.
+
+Phases 2b–2c final gates: 118 TS tests, 31 Python tests including live reads,
+Ruff, lint, typecheck and production build all pass.
