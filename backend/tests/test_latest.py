@@ -14,7 +14,7 @@ class FakeRepository:
     def __init__(self, digest=None):
         self.digest = digest
 
-    def latest(self):
+    def latest(self, locale="tr"):
         return self.digest
 
 
@@ -81,7 +81,7 @@ def test_empty_edition_is_200():
 
 def test_database_error_is_sanitized():
     class BrokenRepository:
-        def latest(self):
+        def latest(self, locale="tr"):
             raise OperationalError("secret SQL", {}, Exception("secret URL"))
 
     with TestClient(create_app(BrokenRepository())) as client:

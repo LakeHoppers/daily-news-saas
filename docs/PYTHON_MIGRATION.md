@@ -1,4 +1,4 @@
-# Python migration — phases 0–2c
+# Python migration — phases 0–3a
 
 Initial decision date: 2026-09-07. Phase 2 scope revised by the founder on
 2026-09-08. Phase 2a now adds manual read-only pipeline replay alongside the
@@ -272,3 +272,68 @@ verified. Full Python elapsed time: 23.602s, 150 embeddings, 15 summaries, ten
 translations, no failed stages. Details and qualification of quality/runtime claims
 are in PYTHON_PIPELINE_VERIFICATION.md. Only phase 4 may change production ownership
 or scheduling; no such change is included here.
+
+
+## Phase 3 revised breakdown — authorized 2026-09-09
+
+Stripe test-mode checkout, webhook sync and cancellation have been verified against
+production-hosted TypeScript routes. Site-wide TR/EN routing is shipped. Phase 3
+can now start; phase 4 still exclusively owns scheduler/authoritative-write cutover.
+
+| Slice | Scope | Engineering estimate | Exit evidence |
+|---|---|---|---|
+| 3a | Public latest/date/story reads, localization, internal user/preferences/history reads | 2–3 days | Read-only Neon comparison against actual TS route/query output; no protected HTTP routes |
+| 3b | Clerk verification, protected user/history, isolated preferences mutations | 3–4 days | Signature/issuer/azp/audience/session-type failures, JWKS rotation/outage, real session and Free/Pro comparisons |
+| 3c | Email template, timezone due check, delivery dedup/retry | 2–3 days | Same-input selection/render parity, isolated delivery ledger and explicitly scoped test send |
+| 3d | Admin reads, source CRUD, versioned editing/audit | 2–3 days | Admin denials, rollback/concurrency and reference transaction comparisons in isolated storage |
+| 3e | Stripe Checkout/Portal/webhooks | 3–4 days | Signed real test-event replay, isolated subscription sync, cancellation and localized return-URL parity |
+
+Total 12–17 engineering days, not elapsed agent runtime. This revises the earlier
+10–15 estimate: localization adds read contracts, and each mutation slice needs a
+non-authoritative verification setup. Proven Stripe behavior reduces uncertainty
+but does not remove signature, idempotency, customer mapping and retry testing.
+
+3a user reads remain internal application operations only. No user data HTTP
+endpoint will be registered until 3b verifies Clerk. `GET /api/me` currently lazily
+creates users in TS; Python 3a intentionally only finds existing `User.clerkId` rows.
+Unknown users must not trigger provisioning in this read-only slice. Writes later
+use isolated test storage; no shared Neon mutations, hosting purchases, production
+scheduler changes or migration ownership changes are authorized by this phase.
+
+
+## Phase 3a completion and limits (2026-09-09)
+
+Public FastAPI reads now cover latest digest (TR/EN per-field fallback), dated
+edition and story details. Dated/story routes deliberately remain Turkish, matching
+actual TS HTTP handlers; only latest accepts `lang` today. Internal user/history
+ports resolve existing `User.clerkId`, preferences, plan/status and filtered history.
+No protected routes are registered. Missing users are not lazily created.
+
+Live comparison against actual TS public handlers plus Prisma-backed history/user
+queries: **16 public cases, 20 history queries (unfiltered + each of nine categories,
+both languages), one existing user profile/preferences/subscription and personalized
+English history — all matched**. Python public cases went through a real local
+Uvicorn HTTP server. Both reference and Python database connections confirmed
+`transaction_read_only=on`. No role, schema or data changes were made.
+
+The historical 2026-09-07 digest still has 20 items with duplicate ranks. All fields
+and story membership match, but equal-rank ordering is unspecified in TS. The
+comparison normalizes `(rank, storyId)` ties and source ordering, not content or
+membership. Python adds deterministic ties. Separate snapshots can drift during a
+live production write; run the comparison during a quiet interval if that occurs.
+
+A live test caught PostgreSQL enum-vs-varchar comparison failure; the read projection
+now explicitly casts category to text for filtering and preference enum arrays to
+text arrays. No enum/DDL ownership is introduced. Public malformed or impossible
+dates return 400 in Python: TS currently normalizes some impossible dates through
+JavaScript Date or raises an internal error. This is a deliberate validation improvement,
+not an assertion of identical invalid-date behavior. Valid dates and missing-row
+contracts preserve parity. Internal history limits enforce 1–50; HTTP user pagination
+parsing remains a 3b concern.
+
+Verification: **47 Python tests including three live tests, 142 TS tests, Ruff
+check/format, ESLint, typecheck and production build passed**. The private oracle
+contains user data, is mode 0600 outside the repo, and must not be committed.
+`verification/phase-3a.json` contains aggregate evidence only. Reproduce using the
+commands in backend/README.md. 3b–3e remain pending; no protected API, preferences
+write, email send or Stripe mutation is implemented by this 3a commit.

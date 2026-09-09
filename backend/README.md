@@ -1,6 +1,8 @@
 # News Daily Python read API
 
-Read API: `GET /api/digests/latest`; phase 2a adds a manual dry-run CLI. See [migration decisions](../docs/PYTHON_MIGRATION.md).
+Read API: `GET /api/digests/latest?lang=tr|en`, `GET /api/digests/{date}`,
+`GET /api/stories/{id}`. Phase 3a adds internal user/history reads only; no
+protected user, admin or billing HTTP routes are exposed. See [migration decisions](../docs/PYTHON_MIGRATION.md).
 Python 3.12 required. From the repository root:
 
 ```sh
@@ -69,3 +71,22 @@ Python phases 2b–2c now include real AI adapters and a complete manual pipelin
 with local-only checkpoint output. Production still runs the TypeScript pipeline.
 See docs/PYTHON_PIPELINE_VERIFICATION.md (from the repo root) for commands,
 real same-input comparisons, cost/runtime evidence and recovery limitations.
+
+
+## Phase 3a real read comparison
+
+Run a local FastAPI server (example uses port 8013), then from the repo root:
+
+```sh
+npx tsx scripts/python-reads-reference.ts /private/tmp/news-daily-reads-reference.json
+PYTHONPATH=backend backend/.venv/bin/python -m app.read_verification \
+  --reference /private/tmp/news-daily-reads-reference.json --base-url http://127.0.0.1:8013
+```
+
+Use a fresh reference filename: the TS oracle refuses to overwrite files or save
+inside the repository. This mode-0600 artifact contains private user information;
+keep it local and outside public folders. Neither tool prints that payload. The
+TS harness sets its connection read-only before importing Prisma; Python retains
+its existing read-only engine/transaction guards. Comparison checks real public
+HTTP responses, all category/locale history combinations and up to five existing
+users without provisioning anyone. Only ordering unspecified by TS is normalized.

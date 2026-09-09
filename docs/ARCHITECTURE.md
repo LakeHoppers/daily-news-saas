@@ -267,3 +267,11 @@ language, database schema, Python migration and production schedules are unchang
 
 Reference: bundled `next/dist/docs/01-app/02-guides/internationalization.md` and
 [Clerk localization](https://clerk.com/docs/guides/customizing-clerk/localization).
+
+
+Phase 3a expands Python public read projections to dated digests/story details and
+English latest summaries. New user domain/application/infrastructure read ports
+resolve existing Clerk subjects without provisioning. Internal history reads reuse
+the bounded digest repository; no protected API is registered until 3b implements
+Clerk verification. Main read-only engine/transaction boundaries remain in force.
+See PYTHON_MIGRATION.md for live differential evidence and 3b–3e scope.

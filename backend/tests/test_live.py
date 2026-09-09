@@ -43,3 +43,35 @@ def test_real_pipeline_snapshot_is_read_only():
         assert len(result["scores"]) == len(snapshot["ranking_stories"])
     finally:
         engine.dispose()
+
+
+@pytest.mark.live
+@pytest.mark.skipif(os.getenv("RUN_LIVE_TESTS") != "1", reason="explicit opt-in required")
+def test_real_localized_history_and_public_details():
+    from app.modules.digest.application.latest import GetDigestHistory
+    from app.modules.digest.infrastructure.repository import SqlAlchemyDigestRepository
+    from app.modules.user.infrastructure.repository import SqlAlchemyUserRepository
+
+    engine = build_engine()
+    try:
+        repo = SqlAlchemyDigestRepository(engine)
+        with TestClient(create_app(repo)) as client:
+            latest = client.get("/api/digests/latest?lang=en").json()
+            dated = client.get(f"/api/digests/{latest['date']}")
+            assert dated.status_code == 200
+            assert dated.json()["digestId"] == latest["digestId"]
+            first = latest["items"][0]
+            story = client.get(f"/api/stories/{first['storyId']}")
+            assert story.status_code == 200
+            assert story.json()["category"] == first["category"]
+            assert story.json()["sources"]
+        history = GetDigestHistory(repo).execute(["ECONOMY"], 14, "en")
+        assert history
+        assert all(item.category == "ECONOMY" for edition in history for item in edition.items)
+        # Unknown identity is not provisioned, even with a production writer URL.
+        assert (
+            SqlAlchemyUserRepository(engine).find_by_clerk_id("phase3a-nonexistent-test-subject")
+            is None
+        )
+    finally:
+        engine.dispose()

@@ -702,3 +702,22 @@ Turkish as recorded above. No scheduling, schema or production account changes.
 Verification: 142 tests across 27 files passed; ESLint, standalone TypeScript
 check and Next.js production build passed. Stale `.next/dev/types` from before
 the route move were cleared and regenerated build types used for verification.
+
+
+## Python Phase 3a — read-only API parity (2026-09-09)
+
+- [x] Phase 3 split into five slices with revised 12–17 engineering-day estimate;
+  see PYTHON_MIGRATION.md. Stripe and site-localization prerequisites cleared.
+- [x] Python latest-digest English fields/fallback, dated editions and story detail.
+- [x] Internal existing-user/preferences/subscription and category-filtered history
+  queries. No authenticated route exposed before the 3b Clerk verifier exists.
+- [x] Real TS/Python read comparison: 16 public responses, 20 history combinations,
+  one existing user and personalized history, all match; connections read-only.
+- [x] 47 Python tests (including three live), 142 TS tests, Ruff check/format,
+  lint/typecheck/build passed. Fixed a live-discovered enum/text filtering mismatch.
+
+Known follow-ups: 3b Clerk verification/protected routes/preferences writes, 3c
+email, 3d admin/audit, 3e billing are not implemented by 3a. Impossible dates are
+rejected with 400 rather than copying TS Date normalization; old equal-rank digest
+ordering is normalized in comparisons. User provisioning remains on the TS writer.
+No frontend, scheduler, email send, database migration or production write changed.

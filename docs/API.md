@@ -5,7 +5,7 @@ Implemented so far: `/api/cron/pipeline`, `/api/admin/pipeline/run` (M1);
 `/api/digests/latest`, `/api/digests/:date`, `/api/stories/:id`, `/api/me`,
 `/api/me/preferences`, `/api/me/digests` (M4); `/api/cron/deliver` (M5);
 `/api/billing/checkout`, `/api/billing/portal`, `/api/webhooks/stripe` (M7 —
-built and unit-tested, not yet live-verified against real Stripe);
+live-verified with real Stripe test-mode checkout, webhook sync and cancellation);
 `/api/admin/sources`, `/api/admin/sources/:id`, `/api/admin/pipeline/runs`,
 `/api/admin/scrape-logs`, `/api/admin/summaries/:id`,
 `/api/admin/audit-logs` (M8). Channel-management routes are still the
@@ -254,3 +254,18 @@ Python homepage HTTP request likewise keeps its existing `lang` contract.
 `{ "locale": "tr" | "en" }`. Missing/invalid values default to `tr`. Checkout
 success/cancel URLs and portal return URLs point to `/{locale}/dashboard`; no
 arbitrary caller-supplied return URL is accepted.
+
+
+## Python Phase 3a reads (2026-09-09)
+
+FastAPI now supports `/api/digests/latest` (`lang=en` or Turkish fallback),
+`/api/digests/{date}` and `/api/stories/{id}`. Public field names, null vs empty
+summary behavior, source metadata and valid-date responses match the actual TS
+handlers. Dated/story reads remain Turkish as on TS. Invalid/impossible dates
+return sanitized 400, missing rows 404, database failures sanitized 503.
+
+User/preferences/subscription and localized history queries exist internally only.
+`/api/me`, admin, billing and delivery endpoints are not registered. Clerk JWT
+verification is required in 3b before any protected Python route is exposed. The
+Next.js frontend and production TS API remain unchanged. Aggregate real comparison
+evidence: `verification/phase-3a.json`.
