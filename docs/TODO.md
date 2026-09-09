@@ -568,6 +568,22 @@ domain later anyway.
 - [ ] **Remind Emre about this proactively** (his explicit request) whenever
       picking this project back up, alongside the other backlog items above.
 
+## Business registration — deliberately deferred (2026-09-09)
+Emre lives in and pays tax in Germany (not Turkey/US as earlier assumed —
+corrected here). Incorporating outside Germany would add complexity, not
+reduce it (German CFC/Hinzurechnungsbesteuerung rules can still tax a
+German-resident-owned foreign company). Trademark filing should also happen
+in Germany (DPMA) or EU-wide (EUIPO), not TR/US, once the brand name is
+locked.
+
+**Explicitly not doing yet, on purpose**: registering as Freiberufler/Gewerbe
+with the Finanzamt, electing Kleinunternehmerregelung, or setting up Stripe's
+individual/sole-proprietor payout flow. There is no real revenue or imminent
+revenue event yet (monetization — see ad-supported free tier below — hasn't
+started), and this registration should happen right before the first real
+transaction, not speculatively during product validation. Revisit this
+exact thread when ad/subscription revenue is actually about to go live.
+
 ## Product backlog (not started — flag to Emre before picking any of these up)
 - [ ] **Rename to "Morning Dose"**: proposed as the final brand name, bundled
       with the English launch rather than done separately (already renamed
