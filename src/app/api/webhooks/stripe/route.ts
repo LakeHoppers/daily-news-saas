@@ -42,22 +42,37 @@ export async function POST(request: Request) {
   }
 
   if (!HANDLED_EVENTS.has(event.type)) {
+    console.log(`[stripe webhook] ignoring unhandled event type: ${event.type}`);
     return NextResponse.json({ received: true, handled: false });
   }
 
-  const subscription = event.data.object as Stripe.Subscription;
-  const stripeCustomerId =
-    typeof subscription.customer === "string" ? subscription.customer : subscription.customer.id;
-  const currentPeriodEndSeconds = subscription.items.data[0]?.current_period_end;
+  try {
+    const subscription = event.data.object as Stripe.Subscription;
+    const stripeCustomerId =
+      typeof subscription.customer === "string" ? subscription.customer : subscription.customer.id;
+    const currentPeriodEndSeconds = subscription.items.data[0]?.current_period_end;
 
-  const result = await new SyncSubscriptionUseCase(new PrismaBillingRepository()).execute({
-    stripeCustomerId,
-    stripeSubscriptionId: subscription.id,
-    status: subscription.status,
-    currentPeriodEnd: currentPeriodEndSeconds
-      ? new Date(currentPeriodEndSeconds * 1000)
-      : null,
-  });
+    console.log(
+      `[stripe webhook] ${event.type} for customer ${stripeCustomerId}, subscription ${subscription.id}, status ${subscription.status}`,
+    );
 
-  return NextResponse.json({ received: true, handled: true, synced: result.synced });
+    const result = await new SyncSubscriptionUseCase(new PrismaBillingRepository()).execute({
+      stripeCustomerId,
+      stripeSubscriptionId: subscription.id,
+      status: subscription.status,
+      currentPeriodEnd: currentPeriodEndSeconds
+        ? new Date(currentPeriodEndSeconds * 1000)
+        : null,
+    });
+
+    console.log(`[stripe webhook] sync result: ${JSON.stringify(result)}`);
+
+    return NextResponse.json({ received: true, handled: true, synced: result.synced });
+  } catch (err) {
+    console.error(`[stripe webhook] failed to process ${event.type}:`, err);
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : String(err) },
+      { status: 500 },
+    );
+  }
 }
