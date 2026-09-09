@@ -103,3 +103,9 @@ Public pages, account preferences, billing controls and embedded Clerk UI use
 redirect to `/en`; unprefixed page links default to Turkish. The internal admin
 UI lives at `/tr/admin` (`/admin` redirects there). API and scheduler URLs are
 unchanged. Email language is still Turkish and is not changed by browsing `/en`.
+
+Python Phase 3 now includes opt-in protected user/history, preferences, admin,
+email and Stripe route ports backed by a private local sandbox. Production remains
+on the existing TypeScript routes. See [migration status](docs/PYTHON_MIGRATION.md)
+for verified parity and the remaining live browser-auth/cutover gates, and
+[backend commands](backend/README.md) to reproduce the isolated checks.

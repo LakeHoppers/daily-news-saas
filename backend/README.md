@@ -1,8 +1,9 @@
 # News Daily Python read API
 
 Read API: `GET /api/digests/latest?lang=tr|en`, `GET /api/digests/{date}`,
-`GET /api/stories/{id}`. Phase 3a adds internal user/history reads only; no
-protected user, admin or billing HTTP routes are exposed. See [migration decisions](../docs/PYTHON_MIGRATION.md).
+`GET /api/stories/{id}`. The default entrypoint exposes public reads only. Phase 3
+protected/mutation routes require the explicit local sandbox described below.
+See [migration decisions](../docs/PYTHON_MIGRATION.md).
 Python 3.12 required. From the repository root:
 
 ```sh
@@ -90,3 +91,43 @@ TS harness sets its connection read-only before importing Prisma; Python retains
 its existing read-only engine/transaction guards. Comparison checks real public
 HTTP responses, all category/locale history combinations and up to five existing
 users without provisioning anyone. Only ordering unspecified by TS is normalized.
+
+## Phase 3 protected API and isolated mutation verification
+
+Production entrypoint `app.main:app` remains public-read-only. To explicitly run
+the additional routes, create a private snapshot from the repo root and compare
+actual TS handlers with Python's local transactions:
+
+```sh
+npx tsx scripts/python-phase3-snapshot.ts /private/tmp/news-daily-phase3.json
+PHASE3_REFERENCE=/private/tmp/news-daily-phase3.json npx vitest run tests/unit/python-phase3-oracle.test.ts
+cd backend
+.venv/bin/python -m app.phase3_verification --snapshot /private/tmp/news-daily-phase3.json
+# Optional real Stripe TEST sessions/event replay and Resend simulator only:
+.venv/bin/python -m app.phase3_verification --snapshot /private/tmp/news-daily-phase3.json --external
+# Manual, loopback-only API; never point production traffic or schedules here:
+.venv/bin/python -m app.sandbox_server --snapshot /private/tmp/news-daily-phase3.json \
+  --state /private/tmp/news-daily-phase3.sqlite --frontend-origin http://localhost:3012
+```
+
+Use fresh private paths. Both JSON files and SQLite contain copied user information;
+keep them outside the repo. Reusing a SQLite path resumes its existing state and
+does not re-import the snapshot. `DATABASE_URL` is read-only; SQLite is the only
+mutation adapter. Local `.env` is loaded without printing it. The manual server
+uses configured Clerk, Stripe test, Resend and cron secrets; it does not provision
+or change any service configuration. It is a bearer-token API (no cookie auth or
+cross-origin browser bridge). Use a browser-issued Clerk token with the exact
+configured origin; never paste tokens into logs or commit them. Missing users are
+not provisioned. Default `app.main:app` has no protected routes registered at all.
+
+`--external` creates disposable test customers/uncompleted Checkout and Portal
+sessions and sends to Resend's simulator. It reads prior Stripe test events and
+locally signs/replays them into SQLite; it does not complete checkout, register a
+webhook endpoint, charge money, or mutate an existing subscription. Missing historic
+test events may mean the replay evidence must be collected again in a future test.
+Real subscriber addresses are rejected before the Resend HTTP call.
+
+New module structure retains application services with injected auth, state,
+Stripe and email ports. Local read/mutation verification is not a replacement for
+future Postgres write-adapter testing. See docs/PYTHON_MIGRATION.md for remaining
+browser-auth and vendor-delivery verification gates and deliberate contract differences.

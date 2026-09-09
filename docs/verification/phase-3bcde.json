@@ -1,0 +1,54 @@
+{
+  "date": "2026-09-09",
+  "scope": "Phase 3b\u20133e isolated sandbox route ports",
+  "pythonTests": {
+    "passed": 84,
+    "liveReadOnlyNeonTests": 3,
+    "ruffCheck": "passed",
+    "ruffFormat": "passed"
+  },
+  "typescriptTests": {
+    "passed": 142,
+    "skippedPrivateOracle": 1,
+    "privateOracleSeparateRun": "passed",
+    "lint": "passed",
+    "typecheck": "passed",
+    "productionBuild": "passed"
+  },
+  "parity": {
+    "adminReadGroups": 4,
+    "mutationCases": 5,
+    "emailExactMatch": true,
+    "billingStatuses": 8
+  },
+  "external": {
+    "resendSimulatorAccepted": true,
+    "stripeCheckoutCreated": true,
+    "stripePortalCreated": true,
+    "realStripeEventsReplayed": 4,
+    "realStripeStatuses": [
+      "active"
+    ],
+    "realStripeCancellationMetadataEvents": 3,
+    "terminalCanceledEventObserved": false,
+    "newCheckoutCompleted": false,
+    "clerkBackendTokenSignatureAndIssuerValid": true,
+    "clerkBackendTokenMissingAzpRejected": true,
+    "browserIssuedClerkPositiveCheckCompleted": false
+  },
+  "boundaries": {
+    "authoritativeWrites": false,
+    "schedulingChanges": false,
+    "postgresMutations": false,
+    "realSubscriberEmail": false,
+    "existingStripeSubscriptionMutation": false,
+    "productionFrontendCutover": false
+  },
+  "qualifications": [
+    "Webhook replay used prior real test payloads and local HMAC signatures, not a newly delivered vendor webhook.",
+    "Stripe test customers and uncompleted sessions were created; no charge.",
+    "SQLite transaction parity does not prove Postgres write constraints or distributed locking.",
+    "Generated duplicate Next.js cache files were moved aside; clean build and typecheck passed.",
+    "Browser-issued auth success, real webhook delivery/new checkout and terminal cancellation remain live-verification gates."
+  ]
+}

@@ -275,3 +275,19 @@ resolve existing Clerk subjects without provisioning. Internal history reads reu
 the bounded digest repository; no protected API is registered until 3b implements
 Clerk verification. Main read-only engine/transaction boundaries remain in force.
 See PYTHON_MIGRATION.md for live differential evidence and 3b–3e scope.
+
+### Python Phase 3 sandbox adapters
+
+`backend/app/modules/auth` verifies Clerk sessions using the current SDK with
+bounded JWKS caching and explicit issuer/origin/session checks. Protected routers
+are registered only by explicit app construction. Existing SQLAlchemy projections
+remain read-only. `StateStore` is the small injected transaction port used by user,
+admin, notification and billing application services; `LocalState` implements it
+as private SQLite outside the repo. It has no Postgres connection/write path.
+
+The sandbox supports atomic version/audit changes, delivery claims and test-only
+Stripe sync. Provider adapters restrict Stripe to test keys and Resend to its
+simulator. `sandbox_server.py` binds loopback and has no scheduler. Admin-triggered
+pipeline artifacts remain local. This adapter proves behavior, not production
+storage scale or distributed locking. Production TS ownership and Prisma migration
+authority remain unchanged; migration docs list the outstanding cutover gates.

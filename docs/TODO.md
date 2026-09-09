@@ -756,3 +756,29 @@ Not written yet.
 
 **Sequencing**: Emre said to prioritize this right after whatever he's
 currently mid-task on — treat it as the next real priority, not backlog.
+
+### Python Phase 3b–3e — implemented in isolated storage (2026-09-09)
+
+- [x] Clerk SDK session verifier, bounded JWKS cache, issuer/origin/audience/type
+  rejection, existing-user mapping and protected user/history routes.
+- [x] Free/Pro preferences, atomic admin source/version/audit operations, local
+  manual pipeline trigger; no shared database writes.
+- [x] Email parity, late delivery, atomic dedup/retry and simulator-only Resend.
+- [x] Stripe test Checkout/Portal, verified signed event replay and local sync.
+- [x] Real snapshot parity: four admin read groups, five TS route mutation cases,
+  exact email template, eight Stripe status mappings. Real Resend simulator and
+  four Stripe event replays passed; all events were active, three had cancellation
+  metadata. No newly completed checkout or terminal canceled event claimed.
+- [ ] Successful browser-issued Clerk JWT against protected Python HTTP remains
+  unverified. Backend API token lacked azp and was correctly rejected.
+- [ ] Before Phase 4: isolated Postgres write adapter, real webhook delivery/new
+  test checkout/terminal cancellation, durable event ordering and pipeline leases.
+
+Full implementation/verification boundaries and reproduction commands are in
+PYTHON_MIGRATION.md and backend/README.md. These are sandbox ports, not a production
+cutover. No scheduling, authoritative writes, domain or hosting changes were made.
+
+Verification for this commit: 84 Python tests (including 3 live read-only Neon),
+142 TS tests plus the separately invoked private oracle, Ruff check/format, lint,
+typecheck and clean production build passed. Generated duplicate Next.js type files
+were moved outside the repo before rebuilding; no source change was needed.

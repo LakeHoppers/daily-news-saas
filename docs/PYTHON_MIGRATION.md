@@ -337,3 +337,118 @@ contains user data, is mode 0600 outside the repo, and must not be committed.
 `verification/phase-3a.json` contains aggregate evidence only. Reproduce using the
 commands in backend/README.md. 3b–3e remain pending; no protected API, preferences
 write, email send or Stripe mutation is implemented by this 3a commit.
+
+## Phase 3b–3e implementation and verification (2026-09-09)
+
+The remaining route ports are implemented for **explicit local sandbox use**.
+The default `app.main:app` still exposes public reads only. The production Next.js
+routes, Vercel configuration, GitHub schedules, Prisma migrations and Neon data are
+unchanged. This is not Phase 4 cutover and is not a claim that Python is ready to
+become the production writer.
+
+### Authentication and storage boundary
+
+`ClerkVerifier` uses installed `clerk-backend-api==7.0.0` for session signature
+verification. A wrapper requires an exact configured issuer, authorized frontend
+origin (`azp`), RS256, finite exp/nbf/iat, active session state, and user/session IDs.
+Audience is enforced when configured; default Clerk sessions have no custom audience.
+API keys, OAuth/M2M tokens, wrong issuers/origins/audiences, expired and pending
+sessions are rejected. Verified `sub` maps only to existing `User.clerkId`; an
+unknown user returns 409 rather than silently provisioning a production account.
+Admin permission comes from the stored user, never request body/token metadata.
+
+SDK source inspection found issuer verification disabled in the installed helper
+and a nested JWKS retry path. The wrapper therefore checks issuer after signature
+verification and retrieves keys from the configured issuer, with a five-second
+HTTP timeout, five-minute per-instance cache, and five-second refresh cooldown.
+It supports rotation, bounds unknown-key retries, and fails closed after cache
+expiry during an outage (503). No token-controlled JWKS URL or issuer discovery.
+
+**Live auth qualification:** a real existing Clerk session token minted through the
+Backend API had a valid signature and expected issuer but omitted `azp`; the wrapper
+correctly rejected it. No browser-issued success token was available to finish the
+live positive authentication check. RSA-signed HTTP tests cover successful verified
+access and all rejection cases. The actual browser-issued success check remains a
+required cutover gate; no bypass was added to make this test pass.
+
+Sources: [Clerk Python backend guide](https://clerk.com/articles/how-to-add-authentication-to-a-python-backend),
+[official Python SDK](https://github.com/clerk/clerk-sdk-python), and the installed
+7.0.0 authentication helper/types used during implementation.
+
+All mutations use an injected `StateStore`. The only concrete mutation adapter is
+`LocalState`, a private SQLite file outside the repository. It copies a read-only
+Neon snapshot and serializes each state transaction with `BEGIN IMMEDIATE`.
+It cannot connect to Postgres. It proves application behavior and rollback, not
+Postgres write-adapter performance, constraints or distributed locking. The latter
+must be implemented and validated in isolated Postgres before Phase 4 authorization.
+Existing SQLAlchemy reads retain read-only transactions and TLS verification.
+
+### Implemented slices
+
+- **3b:** protected `/api/me`, category-filtered TR/EN history, Free/Pro preferences.
+  Auth is a prerequisite to each protected endpoint. Unconfigured writes return 503.
+- **3c:** exact Turkish email rendering, category filtering, UTC edition freshness,
+  local-hour-at-or-after delivery, paused users, retry and atomic dedup claims.
+  A five-minute local claim lease plus provider idempotency avoids concurrent sends.
+  The concrete Resend adapter accepts only `delivered@resend.dev`, its simulator.
+  Real subscriber sends are deliberately impossible with this adapter.
+- **3d:** admin sources/read logs/audit, source create/update, versioned summary edits
+  and atomic audit entries. Concurrent edits allocate distinct versions. A manual
+  admin pipeline trigger runs the Phase 2 local pipeline with a 300-second deadline;
+  its checkpoints/results stay under sandbox `pipelineStates`. It does not replace
+  the snapshot's published digest or become a shared database writer.
+- **3e:** test-key-only Stripe Checkout/Portal, localized return URLs, raw-body webhook
+  verification and local subscription sync. Live-mode events/keys are rejected.
+  Identical retries update the same local subscription rather than appending rows.
+
+### Evidence and deliberate differences
+
+A fresh read-only Neon snapshot contained one user, 15 sources, 305 summaries and
+8 pipeline runs. Four admin read groups matched actual Prisma queries. Five
+preference/source/summary mutation cases matched actual TS route handlers with
+in-memory persistence; generated IDs/timestamps were normalized, not substantive
+fields. The full email subject/HTML/text matched byte-for-byte, and all eight
+Stripe status mappings matched TS. Only unspecified nested scrape-log ordering was
+normalized in the admin read comparison. Snapshot files contain private data and
+are kept mode 0600 outside Git; only aggregate evidence is committed.
+
+Real external checks accepted one simulator email in the final successful run,
+created Stripe test Checkout and Portal sessions, and replayed four existing real
+Stripe test events through the signed Python HTTP endpoint into local storage.
+Three update payloads had cancellation metadata; **all four still reported active**.
+No terminal `canceled` event was available. That status is covered by unit tests,
+not claimed as observed live here. Webhook replays were locally HMAC-signed with the
+configured webhook secret; Stripe did not deliver to a newly registered endpoint.
+This was session creation plus prior event replay, not a newly completed Checkout.
+No existing Stripe subscription/customer was changed; disposable test customers and
+uncompleted sessions were created by verification attempts. No charge was made.
+
+The current Stripe SDK exposes Decimal values in parsed objects. The verification
+harness uses the original response JSON for lossless webhook replay. SDK webhook
+parsing uses `to_dict()`, its supported method, rather than the older recursive API.
+
+Python deliberately rejects fractional integer fields with 400, bounds pagination,
+and makes source/summary changes atomic with their audit entry. Malformed FastAPI
+request shapes use framework 422 responses. These are validation/atomicity
+improvements, not claims of identical TS behavior for every invalid request.
+
+### Remaining Phase 4 gates / known limitations
+
+- Successful browser-issued Clerk token against the real protected Python API.
+- Isolated Postgres write-adapter/schema-constraint tests, then explicitly authorized
+  production provisioning, delivery ledger and write ownership cutover.
+- Real vendor webhook delivery to the eventual backend, a newly completed test
+  checkout, and observed terminal cancellation; unit/replay evidence is not that.
+- Stripe events still follow TS last-arrival semantics; out-of-order events can
+  regress state. Durable event ordering/reconciliation is required before cutover.
+- Local pipeline hard process death can leave its sandbox RUNNING marker; cancellation
+  within the process is now recorded FAILED. Production lease/recovery is Phase 4.
+- SQLite's JSON snapshot is a verification adapter, not a scalable production store.
+  Sandbox delivery reads its frozen digest. Resend idempotency retention is finite;
+  the local ledger must be retained across retries.
+- No scheduling, hosting, production frontend API switch, or migration ownership
+  change is included. No domain or sending-domain work was started.
+
+See `verification/phase-3bcde.json` for aggregate checks and backend/README.md for
+reproduction commands. These implementation slices are shipped with the above
+live-verification gates explicitly outstanding, not labeled fully production-verified.

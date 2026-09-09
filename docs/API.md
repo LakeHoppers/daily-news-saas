@@ -269,3 +269,33 @@ User/preferences/subscription and localized history queries exist internally onl
 verification is required in 3b before any protected Python route is exposed. The
 Next.js frontend and production TS API remain unchanged. Aggregate real comparison
 evidence: `verification/phase-3a.json`.
+
+## Python Phase 3 sandbox routes (2026-09-09)
+
+The production Next.js contracts above remain authoritative. Additional Python
+routes require explicitly constructing the sandbox app; default `app.main:app`
+continues registering only the public digest/story reads. No frontend cutover.
+
+| Route | Authorization | Sandbox behavior |
+|---|---|---|
+| GET /api/me | Clerk session Bearer JWT | Existing mapped user/preferences/plan; missing user 409 |
+| GET /api/me/digests?lang=en&limit=14 | Clerk session | Read-only Neon history, user's categories; limit capped at 50 |
+| PATCH /api/me/preferences | Clerk session | Local Free/Pro preference update |
+| GET/POST /api/admin/sources | Verified stored admin | Local source listing/create |
+| PATCH /api/admin/sources/{id} | Verified stored admin | Local source update + atomic audit |
+| PATCH /api/admin/summaries/{id} | Verified stored admin | New local version + atomic audit |
+| GET /api/admin/pipeline/runs | Verified stored admin | Local snapshot runs; status/limit filters |
+| GET /api/admin/scrape-logs | Verified stored admin | Local sourceId/success/limit filters |
+| GET /api/admin/audit-logs | Verified stored admin | Local logs, bounded limit |
+| POST /api/admin/pipeline/run | Verified stored admin | Manually await local Phase 2 pipeline, 202 result; checkpoints only |
+| GET/POST /api/cron/deliver | Constant-time CRON_SECRET Bearer check | Frozen local edition + local ledger, simulator-only sender |
+| POST /api/billing/checkout | Clerk session | Test customer/session, locale return URL |
+| POST /api/billing/portal | Clerk session | Test portal, locale return URL |
+| POST /api/webhooks/stripe | Raw-body Stripe signature | Test events only, local subscription sync |
+
+Auth failures are sanitized 401, JWKS outages 503, non-admin access 403. Missing
+mutation/provider configuration fails closed with 503. Malformed request shapes
+use FastAPI 422; invalid domain inputs 400, missing rows 404, local conflicts 409.
+No Clerk cookie auth, unsigned JWT fallback, automatic provisioning, public CORS,
+production scheduler wiring or authoritative Python database writes are enabled.
+See PYTHON_MIGRATION.md for live verification limitations before cutover.
