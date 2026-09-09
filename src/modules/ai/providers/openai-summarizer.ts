@@ -30,7 +30,26 @@ byline does not mean the story is about Berlin or the economy. Classify
 "category" strictly by what the facts are actually about; only fall back to
 the candidate when the facts are genuinely ambiguous between two categories.
 BERLIN specifically means the story's subject is Berlin the city/state
-government — not merely that a Berlin-based outlet reported it.`;
+government or a specific Berlin institution/neighborhood/incident — not
+merely that a Berlin-based outlet reported it, and not because a wire-service
+dateline like "Berlin (dpa)" appears in the source text: German national
+outlets and news agencies routinely dateline stories from Berlin regardless
+of the story's actual topic (an insulin factory in Frankfurt, a WHO health
+warning, a national labor-market study are not Berlin news just because a
+Berlin-based wire service filed them). When in doubt between BERLIN and a
+topical category, prefer the topical category.
+
+For "whyItMatters": state the specific, concrete mechanism connecting this
+exact story to the reader — a financial effect, a safety or legal change, a
+policy precedent, a career or business angle, a health risk, something they
+might act on or watch — not a generic claim that the topic "matters to the
+Turkish community in Germany." Do not open with a reflexive phrase like
+"Almanya'da(ki) yaşayan Türkler/Türk toplumu için..." — get straight to the
+actual reason. This item will be read alongside nine other summaries the same
+morning, so vary your opening words and sentence structure from what a
+generic template would produce; if a story is genuinely just background
+interest with no concrete stakes, say that plainly instead of manufacturing
+relevance.`;
 
 export class OpenAISummarizer implements Summarizer {
   constructor(private readonly apiKey: string = process.env.OPENAI_API_KEY ?? "") {}
