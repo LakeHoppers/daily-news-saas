@@ -33,7 +33,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider>
+    <ClerkProvider
+      appearance={{
+        variables: {
+          colorPrimary: "#1c1917",
+          colorForeground: "#1c1917",
+          colorBackground: "#fefdfb",
+          fontFamily: "var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif",
+          borderRadius: "0.5rem",
+        },
+      }}
+    >
       <html
         lang="tr"
         suppressHydrationWarning
