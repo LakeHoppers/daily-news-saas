@@ -721,3 +721,38 @@ email, 3d admin/audit, 3e billing are not implemented by 3a. Impossible dates ar
 rejected with 400 rather than copying TS Date normalization; old equal-rank digest
 ordering is normalized in comparisons. User provisioning remains on the TS writer.
 No frontend, scheduler, email send, database migration or production write changed.
+
+## Data residency / GDPR — Tolga flagged this, real priority (2026-09-09)
+
+Raised by Tolga after seeing the live site being shared with real people (even
+3-5 friends/family counts under GDPR — no user-count threshold). Researched each
+provider directly (see sources in chat, not just general knowledge):
+
+- [x] **Neon** (database): EU — Frankfurt (`eu-central-1`, AWS). Confirmed from
+  our own connection string. No action needed.
+- [ ] **Vercel** (app/API servers): currently **US** (`iad1`, Vercel's default
+  for all new projects). Fixable and cheap: Hobby plan allows a single custom
+  region (just not multiple) — add `"regions": ["fra1"]` to `vercel.json` to
+  move to Frankfurt. Not done yet — do this first when picking this back up.
+- [x] **Resend** (email): confirmed via Resend's own GDPR page — data is
+  **always** stored in the US regardless of sending region; no EU residency
+  option exists at all. Emre explicitly decided this is fine (legal safeguards
+  — DPA, SCCs, EU-US Data Privacy Framework — are enough; no requirement for
+  EU-only storage). Not a blocker, don't revisit unless Emre changes his mind.
+- [ ] **Clerk** (auth): unclear whether EU data residency is included on our
+  (free/dev) plan or is a paid/Enterprise add-on. Emre emailed
+  privacy@clerk.dev on 2026-09-09 asking exactly this. **Waiting on their
+  reply** — check back proactively, don't wait to be asked.
+- [x] **Stripe**: already GDPR-mature, Managed Payments adds further coverage.
+  No action needed.
+- [x] **OpenAI**: only processes news article content, never user personal
+  data (name/email/preferences). Low risk, no action needed.
+
+Also still missing: an actual **Privacy Policy** on the site — required once
+any real personal data is collected, regardless of company/entity status
+(Emre is the data controller personally, per GDPR, even without a registered
+business — see the deliberately-deferred business-registration note above).
+Not written yet.
+
+**Sequencing**: Emre said to prioritize this right after whatever he's
+currently mid-task on — treat it as the next real priority, not backlog.
