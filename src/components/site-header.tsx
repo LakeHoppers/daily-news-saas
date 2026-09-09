@@ -35,7 +35,7 @@ export async function SiteHeader() {
             <Link href="/dashboard" className="text-sm font-medium">
               Hesabım
             </Link>
-            <UserButton />
+            <UserButton customMenuItems={[{ label: "Hesabım", href: "/dashboard" }]} />
           </Show>
         </div>
       </div>

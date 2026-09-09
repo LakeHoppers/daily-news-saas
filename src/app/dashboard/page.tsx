@@ -36,43 +36,56 @@ export default async function DashboardPage() {
           <CardTitle className="text-base">Favori kategoriler</CardTitle>
         </CardHeader>
         <CardContent>
-          <PreferencesForm initialFavoriteCategories={favoriteCategories} />
+          <PreferencesForm initialFavoriteCategories={favoriteCategories} plan={plan} />
         </CardContent>
       </Card>
 
-      <div className="flex flex-col gap-4">
-        <h2 className="text-lg font-semibold tracking-tight">Geçmiş özetler</h2>
-        {history.length === 0 || history.every((d) => d.items.length === 0) ? (
-          <p className="text-sm text-muted-foreground">
-            Henüz gösterilecek bir özet yok.
-          </p>
-        ) : (
-          history
-            .filter((digest) => digest.items.length > 0)
-            .map((digest) => (
-              <Card key={digest.date}>
-                <CardHeader>
-                  <CardTitle className="text-sm text-muted-foreground">
-                    {digest.date}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="flex flex-col gap-2">
-                  {digest.items.map((item) => (
-                    <div
-                      key={item.storyId}
-                      className="flex items-start justify-between gap-3 text-sm"
-                    >
-                      <span>{item.headline}</span>
-                      <Badge variant="outline" className="shrink-0 text-xs">
-                        {CATEGORY_LABELS_TR[item.category]}
-                      </Badge>
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
-            ))
-        )}
-      </div>
+      {(() => {
+        const pastDigests = history.filter((digest) => digest.items.length > 0);
+        return (
+          <details className="group flex flex-col gap-4 [&_summary::-webkit-details-marker]:hidden">
+            <summary className="flex w-fit cursor-pointer list-none items-center gap-1.5 text-lg font-semibold tracking-tight">
+              Geçmiş özetler
+              {pastDigests.length > 0 && (
+                <span className="text-sm font-normal text-muted-foreground">
+                  ({pastDigests.length})
+                </span>
+              )}
+              <span className="text-muted-foreground transition-transform group-open:rotate-90">
+                ›
+              </span>
+            </summary>
+            {pastDigests.length === 0 ? (
+              <p className="text-sm text-muted-foreground">Henüz gösterilecek bir özet yok.</p>
+            ) : (
+              <div className="flex flex-col gap-4">
+                {pastDigests.map((digest) => (
+                  <Card key={digest.date}>
+                    <CardHeader>
+                      <CardTitle className="text-sm text-muted-foreground">
+                        {digest.date}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="flex flex-col gap-2">
+                      {digest.items.map((item) => (
+                        <div
+                          key={item.storyId}
+                          className="flex items-start justify-between gap-3 text-sm"
+                        >
+                          <span>{item.headline}</span>
+                          <Badge variant="outline" className="shrink-0 text-xs">
+                            {CATEGORY_LABELS_TR[item.category]}
+                          </Badge>
+                        </div>
+                      ))}
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </details>
+        );
+      })()}
     </main>
   );
 }

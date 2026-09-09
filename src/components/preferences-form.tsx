@@ -10,8 +10,10 @@ const ALL_CATEGORIES = Object.keys(CATEGORY_LABELS_TR) as Category[];
 
 export function PreferencesForm({
   initialFavoriteCategories,
+  plan,
 }: {
   initialFavoriteCategories: Category[];
+  plan: "FREE" | "PRO";
 }) {
   const [selected, setSelected] = useState<Set<Category>>(
     new Set(initialFavoriteCategories),
@@ -44,6 +46,12 @@ export function PreferencesForm({
 
   return (
     <div className="flex flex-col gap-3">
+      <p className="text-xs text-muted-foreground">
+        Seçtiğin kategoriler, sana gönderilen günlük e-postayı ve aşağıdaki geçmiş özet
+        listesini filtreler — ana sayfadaki günlük dijest herkese aynı şekilde gösterilir.
+        Hiçbirini seçmezsen tüm kategorileri alırsın.
+        {plan === "FREE" && " Ücretsiz planda en fazla 1 kategori seçebilirsin."}
+      </p>
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
         {ALL_CATEGORIES.map((category) => (
           <label
@@ -71,7 +79,9 @@ export function PreferencesForm({
           {status === "saving" ? "Kaydediliyor..." : "Kaydet"}
         </button>
         {status === "saved" && (
-          <span className="text-sm text-muted-foreground">Kaydedildi.</span>
+          <span className="text-sm text-muted-foreground">
+            Kaydedildi — bir sonraki e-postandan itibaren geçerli olacak.
+          </span>
         )}
         {status === "error" && (
           <span className="text-sm text-destructive">Bir şeyler ters gitti.</span>
