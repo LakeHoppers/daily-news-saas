@@ -1,4 +1,4 @@
-import type { Locale } from "@/modules/digest/domain/localize";
+import type { Locale } from "@/shared/locale";
 
 export const HOME_COPY: Record<
   Locale,

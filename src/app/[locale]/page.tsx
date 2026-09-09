@@ -1,14 +1,16 @@
 import type { CSSProperties } from "react";
-import Link from "next/link";
+import { notFound } from "next/navigation";
+import { isLocale } from "@/shared/locale";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getHomeDigest } from "@/shared/home-digest";
-import { CATEGORY_LABELS_EN, CATEGORY_LABELS_TR } from "@/shared/category-labels";
+import { CATEGORY_LABELS } from "@/shared/category-labels";
 import { CATEGORY_ACCENT } from "@/shared/category-colors";
 import { HOME_COPY } from "@/shared/home-copy";
-import type { Locale } from "@/modules/digest/domain/localize";
+import type { Locale } from "@/shared/locale";
 
 function formatDate(isoDate: string, locale: Locale): string {
   return new Intl.DateTimeFormat(locale === "en" ? "en-US" : "tr-TR", {
+    timeZone: "UTC",
     day: "numeric",
     month: "long",
     year: "numeric",
@@ -16,14 +18,15 @@ function formatDate(isoDate: string, locale: Locale): string {
 }
 
 export default async function Home({
-  searchParams,
+  params,
 }: {
-  searchParams: Promise<{ lang?: string }>;
+  params: Promise<{ locale: string }>;
 }) {
-  const locale: Locale = (await searchParams).lang === "en" ? "en" : "tr";
+  const { locale } = await params;
+  if (!isLocale(locale)) notFound();
   const digest = await getHomeDigest(locale);
   const copy = HOME_COPY[locale];
-  const categoryLabels = locale === "en" ? CATEGORY_LABELS_EN : CATEGORY_LABELS_TR;
+  const categoryLabels = CATEGORY_LABELS[locale];
 
   return (
     <main
@@ -36,21 +39,7 @@ export default async function Home({
             <span className="h-1.5 w-1.5 rounded-full bg-foreground/50" />
             {copy.tagline}
           </div>
-          <div className="flex shrink-0 items-center gap-1 text-xs font-medium tracking-wide uppercase">
-            <Link
-              href="/"
-              className={locale === "tr" ? "text-foreground" : "text-muted-foreground hover:text-foreground"}
-            >
-              TR
-            </Link>
-            <span className="text-muted-foreground/40">/</span>
-            <Link
-              href="/?lang=en"
-              className={locale === "en" ? "text-foreground" : "text-muted-foreground hover:text-foreground"}
-            >
-              EN
-            </Link>
-          </div>
+
         </div>
         <h1 className="font-heading text-4xl leading-[1.1] font-medium text-balance sm:text-5xl">
           {copy.title}

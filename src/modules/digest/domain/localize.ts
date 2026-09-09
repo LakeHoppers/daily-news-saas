@@ -1,4 +1,5 @@
-export type Locale = "tr" | "en";
+import type { Locale } from "@/shared/locale";
+export type { Locale } from "@/shared/locale";
 
 /** English falls back to Turkish per-field when a story hasn't been translated yet. */
 export function pickLocalizedText(

@@ -22,7 +22,7 @@ export default async function AdminPage() {
     await requireAdmin();
   } catch (err) {
     if (err instanceof ForbiddenError) {
-      redirect("/dashboard");
+      redirect("/tr/dashboard");
     }
     throw err;
   }
@@ -201,7 +201,7 @@ export default async function AdminPage() {
                   </TableCell>
                   <TableCell>
                     <Link
-                      href={`/admin/summaries/${summary.id}`}
+                      href={`/tr/admin/summaries/${summary.id}`}
                       className="text-sm hover:underline"
                     >
                       Düzenle

@@ -13,7 +13,7 @@ export default async function AdminSummaryEditPage({
     await requireAdmin();
   } catch (err) {
     if (err instanceof ForbiddenError) {
-      redirect("/dashboard");
+      redirect("/tr/dashboard");
     }
     throw err;
   }

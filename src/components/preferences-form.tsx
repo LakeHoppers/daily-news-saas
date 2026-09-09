@@ -4,17 +4,24 @@ import { useState } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import type { Category } from "@/generated/prisma/enums";
-import { CATEGORY_LABELS_TR } from "@/shared/category-labels";
+import { CATEGORY_LABELS_TR, CATEGORY_LABELS } from "@/shared/category-labels";
+
+import { SITE_COPY } from "@/shared/site-copy";
+import type { Locale } from "@/shared/locale";
+import { useRouter } from "next/navigation";
 
 const ALL_CATEGORIES = Object.keys(CATEGORY_LABELS_TR) as Category[];
 
 export function PreferencesForm({
   initialFavoriteCategories,
-  plan,
+  plan, locale,
 }: {
   initialFavoriteCategories: Category[];
   plan: "FREE" | "PRO";
+  locale: Locale;
 }) {
+  const copy = SITE_COPY[locale];
+  const router = useRouter();
   const [selected, setSelected] = useState<Set<Category>>(
     new Set(initialFavoriteCategories),
   );
@@ -39,6 +46,7 @@ export function PreferencesForm({
         body: JSON.stringify({ favoriteCategories: [...selected] }),
       });
       setStatus(res.ok ? "saved" : "error");
+      if (res.ok) router.refresh();
     } catch {
       setStatus("error");
     }
@@ -47,17 +55,13 @@ export function PreferencesForm({
   return (
     <div className="flex flex-col gap-3">
       <p className="text-xs text-muted-foreground">
-        Seçtiğin kategoriler, sana gönderilen günlük e-postayı ve aşağıdaki geçmiş özet
-        listesini filtreler — ana sayfadaki günlük dijest herkese aynı şekilde gösterilir.
-        Hiçbirini seçmezsen tüm kategorileri alırsın.
-        {plan === "FREE" && " Ücretsiz planda en fazla 1 kategori seçebilirsin."}
+        {copy.preferences} {plan === "FREE" && copy.freeLimit}
       </p>
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
         {ALL_CATEGORIES.map((category) => (
-          <label
+          <div
             key={category}
             className="flex items-center gap-2 text-sm"
-            htmlFor={`category-${category}`}
           >
             <Checkbox
               id={`category-${category}`}
@@ -65,9 +69,9 @@ export function PreferencesForm({
               onCheckedChange={(checked) => setChecked(category, checked === true)}
             />
             <Label htmlFor={`category-${category}`} className="font-normal">
-              {CATEGORY_LABELS_TR[category]}
+              {CATEGORY_LABELS[locale][category]}
             </Label>
-          </label>
+          </div>
         ))}
       </div>
       <div className="flex items-center gap-3">
@@ -76,15 +80,15 @@ export function PreferencesForm({
           disabled={status === "saving"}
           className="w-fit rounded-md bg-foreground px-3 py-1.5 text-sm font-medium text-background disabled:opacity-60"
         >
-          {status === "saving" ? "Kaydediliyor..." : "Kaydet"}
+          {status === "saving" ? copy.saving : copy.save}
         </button>
         {status === "saved" && (
           <span className="text-sm text-muted-foreground">
-            Kaydedildi — bir sonraki e-postandan itibaren geçerli olacak.
+            {copy.saved}
           </span>
         )}
         {status === "error" && (
-          <span className="text-sm text-destructive">Bir şeyler ters gitti.</span>
+          <span className="text-sm text-destructive">{copy.error}</span>
         )}
       </div>
     </div>

@@ -1,3 +1,4 @@
+import { isLocale } from "@/shared/locale";
 import { NextResponse } from "next/server";
 import { getOrCreateCurrentUser, UnauthorizedError } from "@/shared/api-guards";
 import { CreateCheckoutSessionUseCase } from "@/modules/billing/application/create-checkout-session.use-case";
@@ -15,6 +16,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "priceId is required" }, { status: 400 });
     }
 
+    const locale = isLocale(body?.locale) ? body.locale : "tr";
     const origin = new URL(request.url).origin;
 
     const url = await new CreateCheckoutSessionUseCase(
@@ -24,8 +26,8 @@ export async function POST(request: Request) {
       userId: user.id,
       email: user.email,
       priceId,
-      successUrl: `${origin}/dashboard?checkout=success`,
-      cancelUrl: `${origin}/dashboard?checkout=cancelled`,
+      successUrl: `${origin}/${locale}/dashboard?checkout=success`,
+      cancelUrl: `${origin}/${locale}/dashboard?checkout=cancelled`,
     });
 
     return NextResponse.json({ url });

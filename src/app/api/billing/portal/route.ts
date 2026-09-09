@@ -1,3 +1,4 @@
+import { isLocale } from "@/shared/locale";
 import { NextResponse } from "next/server";
 import { getOrCreateCurrentUser, UnauthorizedError } from "@/shared/api-guards";
 import {
@@ -10,12 +11,14 @@ import { RealStripeGateway } from "@/modules/billing/infrastructure/stripe-gatew
 export async function POST(request: Request) {
   try {
     const user = await getOrCreateCurrentUser();
+    const body = await request.json().catch(() => ({}));
+    const locale = isLocale(body?.locale) ? body.locale : "tr";
     const origin = new URL(request.url).origin;
 
     const url = await new CreatePortalSessionUseCase(
       new PrismaBillingRepository(),
       new RealStripeGateway(),
-    ).execute({ userId: user.id, returnUrl: `${origin}/dashboard` });
+    ).execute({ userId: user.id, returnUrl: `${origin}/${locale}/dashboard` });
 
     return NextResponse.json({ url });
   } catch (err) {

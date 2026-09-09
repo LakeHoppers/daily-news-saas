@@ -81,6 +81,7 @@ export interface DigestHistoryItem {
 export async function getDigestHistory(
   categories: Category[],
   limit: number,
+  locale: Locale = "tr",
 ): Promise<DigestHistoryItem[]> {
   const digests = await prisma.digest.findMany({
     orderBy: { date: "desc" },
@@ -102,7 +103,7 @@ export async function getDigestHistory(
       rank: item.rank,
       storyId: item.storyId,
       category: item.story.category,
-      headline: item.story.summaries[0]?.headline ?? "",
+      headline: pickLocalizedText(locale, item.story.summaries[0]?.headline ?? "", item.story.summaries[0]?.headlineEn),
     })),
   }));
 }

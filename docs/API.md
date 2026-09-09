@@ -236,3 +236,21 @@ Phases 2b–2c add manual Python AI/full-pipeline verification commands only. Th
 local orchestrator uses isolated JSON state, dependency-injected AI ports and no
 production write repository. HTTP contracts, frontend behavior and production
 scheduling are unchanged. See PYTHON_PIPELINE_VERIFICATION.md for evidence.
+
+
+## Locale routing update (2026-09-09)
+
+Web pages use `/tr` or `/en` prefixes, including `/en/dashboard`,
+`/en/sign-in` and `/en/sign-up`. Unprefixed pages redirect to Turkish by default;
+legacy `?lang=en` selects the English redirect and is removed from the URL.
+An explicit locale prefix wins over a legacy query parameter. `/admin` and
+`/en/admin` redirect to `/tr/admin`. Unsupported locale pages return 404.
+
+API paths remain unprefixed. Their existing `lang` read-side query contracts are
+transport parameters, not an alternative web-page locale mechanism. The optional
+Python homepage HTTP request likewise keeps its existing `lang` contract.
+
+`POST /api/billing/checkout` and `POST /api/billing/portal` additionally accept
+`{ "locale": "tr" | "en" }`. Missing/invalid values default to `tr`. Checkout
+success/cancel URLs and portal return URLs point to `/{locale}/dashboard`; no
+arbitrary caller-supplied return URL is accepted.

@@ -14,13 +14,13 @@ import { useTheme } from "next-themes";
  * state on a later effect, so a click in that window would otherwise read a
  * stale value and toggle the wrong way.
  */
-export function ThemeToggle() {
+export function ThemeToggle({ label }: { label: string }) {
   const { setTheme } = useTheme();
 
   return (
     <button
       type="button"
-      aria-label="Tema değiştir"
+      aria-label={label}
       onClick={() =>
         setTheme(document.documentElement.classList.contains("dark") ? "light" : "dark")
       }

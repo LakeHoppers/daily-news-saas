@@ -243,3 +243,27 @@ Phases 2b–2c add manual Python AI/full-pipeline verification commands only. Th
 local orchestrator uses isolated JSON state, dependency-injected AI ports and no
 production write repository. HTTP contracts, frontend behavior and production
 scheduling are unchanged. See PYTHON_PIPELINE_VERIFICATION.md for evidence.
+
+
+## Site localization (2026-09-09)
+
+Next.js 16's `[locale]` root layout owns HTML language, metadata, Clerk locale
+and the shared header/footer. `src/shared/locale.ts` is the single TR/EN type
+and routing policy; typed UI dictionaries live in `site-copy.ts`, `home-copy.ts`
+and `category-labels.ts`. Pages await route params, validate unsupported locales
+with 404, then pass the locale to read-side queries and client controls.
+
+Proxy canonicalizes legacy page links, including `?lang=en`, before enforcing
+Clerk protection on localized dashboard/admin routes. `/api`, `/__clerk`, assets
+and scheduler paths are not localized. The root defaults to Turkish; no browser
+language or cookie inference changes an explicit URL. Header language switching
+uses a full navigation on the same page to reset Clerk UI state. Admin is
+canonicalized to `/tr/admin` and stays Turkish. Clerk's `appearance` is preserved.
+
+Dashboard history now selects translated headlines with per-field Turkish fallback.
+Preferences refresh the server-rendered history after saving. Billing receives a
+validated optional locale and builds same-origin localized return URLs. Email
+language, database schema, Python migration and production schedules are unchanged.
+
+Reference: bundled `next/dist/docs/01-app/02-guides/internationalization.md` and
+[Clerk localization](https://clerk.com/docs/guides/customizing-clerk/localization).

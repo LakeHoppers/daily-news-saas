@@ -23,3 +23,5 @@ export const CATEGORY_LABELS_EN: Record<Category, string> = {
   SOCIETY: "Society",
   SPORTS: "Sports",
 };
+
+export const CATEGORY_LABELS = { tr: CATEGORY_LABELS_TR, en: CATEGORY_LABELS_EN };

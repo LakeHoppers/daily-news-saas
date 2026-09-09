@@ -674,3 +674,31 @@ See PYTHON_PIPELINE_VERIFICATION.md and verification/phase-2bc.json for evidence
 
 Phases 2b–2c final gates: 118 TS tests, 31 Python tests including live reads,
 Ruff, lint, typecheck and production build all pass.
+
+
+## Site-wide TR/EN routing (2026-09-09)
+
+- [x] Move page/root layout to `[locale]`; header/footer, metadata and HTML
+  language follow the path. Legacy query-based homepage switches redirect only.
+- [x] Localize dashboard, preferences, billing controls and digest history.
+  Preserve category filtering and untranslated-story fallback. Refresh history
+  after preference saves; preserve locale through Stripe return URLs.
+- [x] Add Clerk localization dictionaries for sign-in/sign-up/account UI, retaining
+  the existing appearance. Language switching reloads the current page so Clerk
+  and app locale change together. Internal admin stays Turkish at `/tr/admin`.
+- [x] Regression coverage for redirects, protected paths, excluded machine routes,
+  localized history and validated billing return URLs.
+- [x] Browser verified the local production build: English homepage with real
+  10-story digest, English sign-in modal, Turkish sign-up page, localized header
+  and footer, and English dashboard's sign-in redirect. Unsupported `/de` gives
+  404; unauthenticated cron request remains 401.
+
+Known follow-ups: this browser session was signed out; authenticated account-modal
+click-through and signed-in dashboard were not live-verified in this pass.
+Clerk's community Turkish dictionary can fall back to English for missing keys
+(e.g. the password placeholder); app-owned copy is localized. Email delivery stays
+Turkish as recorded above. No scheduling, schema or production account changes.
+
+Verification: 142 tests across 27 files passed; ESLint, standalone TypeScript
+check and Next.js production build passed. Stale `.next/dev/types` from before
+the route move were cleared and regenerated build types used for verification.

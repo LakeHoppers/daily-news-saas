@@ -4,14 +4,21 @@ import { PreferencesForm } from "@/components/preferences-form";
 import { BillingCard } from "@/components/billing-card";
 import { getDigestHistory } from "@/modules/digest/infrastructure/digest-view";
 import { getOrCreateCurrentUser } from "@/shared/api-guards";
-import { CATEGORY_LABELS_TR } from "@/shared/category-labels";
+import { CATEGORY_LABELS } from "@/shared/category-labels";
 import { prisma } from "@/shared/prisma";
 
-export default async function DashboardPage() {
+import { isLocale } from "@/shared/locale";
+import { SITE_COPY } from "@/shared/site-copy";
+import { notFound } from "next/navigation";
+
+export default async function DashboardPage({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  if (!isLocale(locale)) notFound();
+  const copy = SITE_COPY[locale];
   const user = await getOrCreateCurrentUser();
   const favoriteCategories = user.preference?.favoriteCategories ?? [];
   const [history, subscription] = await Promise.all([
-    getDigestHistory(favoriteCategories, 14),
+    getDigestHistory(favoriteCategories, 14, locale),
     prisma.subscription.findUnique({ where: { userId: user.id } }),
   ]);
   const plan = subscription?.plan ?? "FREE";
@@ -19,24 +26,24 @@ export default async function DashboardPage() {
   return (
     <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-8 px-4 py-16">
       <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-semibold tracking-tight">Hesabım</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">{copy.account}</h1>
         <p className="text-muted-foreground">
-          Hangi kategorilerin özetini görmek istediğini seç.
+          {copy.choose}
         </p>
       </div>
 
       <Card>
         <CardContent>
-          <BillingCard plan={plan} />
+          <BillingCard plan={plan} locale={locale} />
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Favori kategoriler</CardTitle>
+          <CardTitle className="text-base">{copy.favorites}</CardTitle>
         </CardHeader>
         <CardContent>
-          <PreferencesForm initialFavoriteCategories={favoriteCategories} plan={plan} />
+          <PreferencesForm initialFavoriteCategories={favoriteCategories} plan={plan} locale={locale} />
         </CardContent>
       </Card>
 
@@ -45,7 +52,7 @@ export default async function DashboardPage() {
         return (
           <details className="group flex flex-col gap-4 [&_summary::-webkit-details-marker]:hidden">
             <summary className="flex w-fit cursor-pointer list-none items-center gap-1.5 text-lg font-semibold tracking-tight">
-              Geçmiş özetler
+              {copy.history}
               {pastDigests.length > 0 && (
                 <span className="text-sm font-normal text-muted-foreground">
                   ({pastDigests.length})
@@ -56,7 +63,7 @@ export default async function DashboardPage() {
               </span>
             </summary>
             {pastDigests.length === 0 ? (
-              <p className="text-sm text-muted-foreground">Henüz gösterilecek bir özet yok.</p>
+              <p className="text-sm text-muted-foreground">{copy.empty}</p>
             ) : (
               <div className="flex flex-col gap-4">
                 {pastDigests.map((digest) => (
@@ -74,7 +81,7 @@ export default async function DashboardPage() {
                         >
                           <span>{item.headline}</span>
                           <Badge variant="outline" className="shrink-0 text-xs">
-                            {CATEGORY_LABELS_TR[item.category]}
+                            {CATEGORY_LABELS[locale][item.category]}
                           </Badge>
                         </div>
                       ))}

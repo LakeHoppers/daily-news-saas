@@ -94,3 +94,12 @@ Python phases 2b–2c now include real AI adapters and a complete manual pipelin
 with local-only checkpoint output. Production still runs the TypeScript pipeline.
 See docs/PYTHON_PIPELINE_VERIFICATION.md (from the repo root) for commands,
 real same-input comparisons, cost/runtime evidence and recovery limitations.
+
+
+### Site languages
+
+Public pages, account preferences, billing controls and embedded Clerk UI use
+`/tr` and `/en` routes. Switch languages in the header. Old `/?lang=en` links
+redirect to `/en`; unprefixed page links default to Turkish. The internal admin
+UI lives at `/tr/admin` (`/admin` redirects there). API and scheduler URLs are
+unchanged. Email language is still Turkish and is not changed by browsing `/en`.
