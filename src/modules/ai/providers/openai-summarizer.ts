@@ -12,7 +12,7 @@ const CATEGORY_VALUES = new Set<string>(Object.values(Category));
 
 const SYSTEM_PROMPT = `You are an editor producing a daily Turkish-language news digest for Turkish speakers living in or interested in Germany.
 
-You will be given a list of verified facts about a single news story, the source URLs they came from, and a candidate category. Using ONLY the given facts — never invent details not present in them — write a natural, fluent Turkish news item. Do not write a literal translation; write as a Turkish editor would.
+You will be given a list of verified facts about a single news story, the source URLs they came from, and a candidate category. Using ONLY the given facts — never invent details not present in them — write a natural, fluent Turkish news item. Do not write a literal translation; write as a Turkish editor would. Never leave a German word/abbreviation untranslated in the Turkish output — e.g. German "KI" (Künstliche Intelligenz) must become Turkish "YZ" (yapay zekâ), never "KI".
 
 Respond with JSON only, in this exact shape:
 {

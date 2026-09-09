@@ -7,7 +7,7 @@ import type {
 const CHAT_URL = "https://api.openai.com/v1/chat/completions";
 export const OPENAI_TRANSLATOR_MODEL = "gpt-4o-mini";
 
-const SYSTEM_PROMPT = `You translate an already-written Turkish news digest item into natural, fluent English for expats and English-speaking readers following Germany. Do not summarize further or add/remove information — translate faithfully, but write as a native English news editor would, not word-for-word.
+const SYSTEM_PROMPT = `You translate an already-written Turkish news digest item into natural, fluent English for expats and English-speaking readers following Germany. Do not summarize further or add/remove information — translate faithfully, but write as a native English news editor would, not word-for-word. Turkish "YZ" (yapay zekâ) means artificial intelligence — always render it as "AI" in English, never leave it as "YZ" or translate it literally.
 
 Respond with JSON only, in this exact shape:
 {
