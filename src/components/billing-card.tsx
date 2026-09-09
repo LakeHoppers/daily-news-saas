@@ -39,7 +39,7 @@ export function BillingCard({ plan }: { plan: "FREE" | "PRO" }) {
         disabled={loading}
         className="shrink-0 rounded-md bg-foreground px-3 py-1.5 text-sm font-medium text-background disabled:opacity-60"
       >
-        {loading ? "..." : plan === "PRO" ? "Faturalandırmayı yönet" : "Pro'ya yükselt"}
+        {loading ? "..." : plan === "PRO" ? "Üyeliğimi yönet" : "Pro'ya yükselt"}
       </button>
     </div>
   );
