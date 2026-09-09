@@ -268,19 +268,34 @@ Emre doesn't want Telegram integration. Do not build
       all three use cases with fake `StripeGateway`/`BillingRepository`
 
 ### Known follow-ups from M7
-- **Not live-verified.** No real Stripe test-mode credentials yet (secret
-  key, Pro price ID, webhook signing secret) — Emre chose to defer this.
-  Before trusting this in production: run a real test-mode checkout,
-  confirm the webhook fires and `Subscription` updates, confirm gating
-  actually changes behavior for a real FREE vs PRO user, and confirm the
-  Billing Portal (cancel/update card) round-trips correctly back to a
-  synced `Subscription` row.
-- Free/Pro limits (`FREE_MAX_CATEGORIES = 1`, `FREE_DIGEST_HOUR = 9`) are
-  a first guess at "Pro = all categories + earlier delivery" from the
-  original spec — Emre hasn't confirmed actual pricing/limits.
-- No handling yet for a user starting a second checkout while already
+
+**Live-verified 2026-09-09** — real Stripe test-mode account created,
+Managed Payments selected (Stripe as merchant of record for VAT/tax, +3.5%
+fee — reasonable at pre-revenue scale, revisit once volume justifies
+self-managed tax), Product "News Daily Pro" created (€4.99/month, EUR,
+tax category "Digital Newspapers - Subscription"), real secret key +
+webhook signing secret + Price ID (`price_1UDiKR3CitkUk0FFNiR7ata5`) wired
+into both local `.env` and Vercel (production + preview). A real test-mode
+checkout with Stripe's test card completed the full loop: Checkout session
+→ `customer.subscription.created` webhook fired and signature-verified →
+`SyncSubscriptionUseCase` synced a real `Subscription` row (plan PRO,
+status ACTIVE, real `stripeCustomerId`/`stripeSubscriptionId`) → dashboard
+correctly displayed "Pro üye".
+
+- [ ] **Billing Portal not yet tested** — cancel/update-card round-trip
+  (`customer.subscription.updated`/`.deleted` webhook path) is unverified.
+  Should be tested next: click "Faturalandırmayı yönet", cancel the test
+  subscription, confirm the `Subscription` row syncs back to FREE.
+- [x] Pricing confirmed: **€4.99/month**, ad-free Pro (on top of existing
+  "all categories + earlier delivery"). Free tier will be ad-supported
+  once an ad network is chosen (separate backlog item, not started).
+- [ ] No handling yet for a user starting a second checkout while already
   subscribed (Stripe would just let them create a duplicate subscription
   under the same customer) — worth guarding before real launch.
+- [ ] Still on Stripe **test mode** — switching to Live mode (real money)
+  requires completing Stripe's business verification/activation, which
+  Emre has deliberately deferred (see "Business registration —
+  deliberately deferred" above) until real revenue is imminent.
 
 ## M8 — Admin panel ✅
 - [x] `GET/POST /api/admin/sources`, `PATCH /api/admin/sources/:id` — create,

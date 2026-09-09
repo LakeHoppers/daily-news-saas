@@ -31,10 +31,15 @@ Deliberately dropped (2026-07-27): no Telegram integration wanted. Left in
 this doc only so the milestone numbering below stays stable; nothing in M6
 should be started.
 
-## M7 — Monetization — built, live verification pending real Stripe keys
+## M7 — Monetization ✅
 Stripe Checkout + Billing Portal + webhook, Free/Pro gating (Pro = all
-categories + earlier delivery). Code is done and unit-tested; see TODO.md
-for what's still unverified.
+categories + earlier delivery + ad-free). Live-verified 2026-09-09 with a
+real test-mode checkout: real Stripe customer/subscription created,
+`customer.subscription.created` webhook fired and verified, `Subscription`
+row synced to PRO/ACTIVE, dashboard correctly shows "Pro üye". Pricing:
+€4.99/month via Stripe Managed Payments (Stripe as merchant of record for
+VAT). Billing Portal (cancel/update card) round-trip not yet separately
+tested — see TODO.md.
 
 ## M8 — Admin panel ✅
 Source management UI, force refresh, summary editing (versioned), pipeline
