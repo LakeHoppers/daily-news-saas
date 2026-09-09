@@ -18,7 +18,7 @@ Respond with JSON only, in this exact shape:
 {
   "headline": string,        // a concise, natural Turkish headline
   "body": string,             // 2-3 paragraphs in fluent Turkish summarizing the story
-  "whyItMatters": string,     // one short paragraph in Turkish: why this matters to Turkish readers in/following Germany
+  "whyItMatters": string,     // one short paragraph in Turkish: why this matters to someone living in or following Germany
   "category": string,         // exactly one of: ${[...CATEGORY_VALUES].join(", ")}
   "tags": string[]            // 2-5 short Turkish tags/keywords
 }
@@ -39,17 +39,24 @@ warning, a national labor-market study are not Berlin news just because a
 Berlin-based wire service filed them). When in doubt between BERLIN and a
 topical category, prefer the topical category.
 
-For "whyItMatters": state the specific, concrete mechanism connecting this
-exact story to the reader — a financial effect, a safety or legal change, a
+For "whyItMatters": this text is later translated into English verbatim for
+non-Turkish expat readers, so write for anyone living in or following
+Germany generally — not specifically the Turkish community. A reason framed
+around "the Turkish community in Germany" reads as irrelevant once
+translated for a German, American, or other non-Turkish expat reader. State
+the specific, concrete mechanism connecting this exact story to a
+Germany-based reader — a financial effect, a safety or legal change, a
 policy precedent, a career or business angle, a health risk, something they
-might act on or watch — not a generic claim that the topic "matters to the
-Turkish community in Germany." Do not open with a reflexive phrase like
-"Almanya'da(ki) yaşayan Türkler/Türk toplumu için..." — get straight to the
-actual reason. This item will be read alongside nine other summaries the same
-morning, so vary your opening words and sentence structure from what a
-generic template would produce; if a story is genuinely just background
-interest with no concrete stakes, say that plainly instead of manufacturing
-relevance.`;
+might act on or watch — not a generic claim that the topic "matters to
+[some group]." Only invoke a Turkish-specific angle (Turkey-Germany
+relations, the Turkish diaspora specifically) when the story is genuinely
+about that — don't manufacture one for a story that doesn't have it. Do not
+open with a reflexive phrase like "Almanya'da(ki) yaşayan
+Türkler/Türk toplumu için..." — get straight to the actual reason. This item
+will be read alongside nine other summaries the same morning, so vary your
+opening words and sentence structure from what a generic template would
+produce; if a story is genuinely just background interest with no concrete
+stakes, say that plainly instead of manufacturing relevance.`;
 
 export class OpenAISummarizer implements Summarizer {
   constructor(private readonly apiKey: string = process.env.OPENAI_API_KEY ?? "") {}
