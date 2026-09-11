@@ -11,6 +11,7 @@ export const SITE_COPY = {
     pro: "Pro üye", free: "Ücretsiz plan", proDescription: "Tüm kategoriler ve istediğin saatte teslimat açık.",
     manage: "Üyeliğimi yönet", upgrade: "Pro’ya yükselt",
     description: "Almanya’daki en önemli haberlerin günlük Türkçe özeti.",
+    privacyLink: "Gizlilik Politikası",
   },
   en: {
     signIn: "Sign in", signUp: "Sign up", account: "My Account", theme: "Toggle theme",
@@ -23,5 +24,6 @@ export const SITE_COPY = {
     pro: "Pro member", free: "Free plan", proDescription: "All categories and your choice of delivery time.",
     manage: "Manage subscription", upgrade: "Upgrade to Pro",
     description: "A daily summary of the most important German news in English.",
+    privacyLink: "Privacy Policy",
   },
 } satisfies Record<Locale, Record<string, string>>;
