@@ -748,14 +748,17 @@ provider directly (see sources in chat, not just general knowledge):
 - [x] **OpenAI**: only processes news article content, never user personal
   data (name/email/preferences). Low risk, no action needed.
 
-Also still missing: an actual **Privacy Policy** on the site — required once
-any real personal data is collected, regardless of company/entity status
-(Emre is the data controller personally, per GDPR, even without a registered
-business — see the deliberately-deferred business-registration note above).
-Not written yet.
+- [x] **Privacy Policy**: live at `/tr/privacy` and `/en/privacy`, linked from
+  the site footer (2026-09-11). Covers what's collected, legal basis, every
+  processor (Clerk/Neon/Vercel/Resend/Stripe/OpenAI) with hosting location,
+  retention, GDPR rights, cookies. Data controller listed as Emre personally
+  (no registered company yet — see business-registration note above).
 
-**Sequencing**: Emre said to prioritize this right after whatever he's
-currently mid-task on — treat it as the next real priority, not backlog.
+**Still open**: Resend has no EU residency option (accepted as-is, DPA/SCCs/DPF
+cover it) — verifying a sending subdomain (e.g. `news.synch.coach`) is a
+separate, still-pending action item, unrelated to the privacy policy itself.
+Clerk's EU-residency status is still unconfirmed — reply from privacy@clerk.dev
+still pending (emailed 2026-09-09).
 
 ### Python Phase 3b–3e — implemented in isolated storage (2026-09-09)
 
