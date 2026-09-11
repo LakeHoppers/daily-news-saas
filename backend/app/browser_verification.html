@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>News Daily — local live verification</title>
+<style>body{font:16px system-ui;max-width:720px;margin:40px auto;padding:20px}button{padding:12px;margin:8px 8px 8px 0}pre{white-space:pre-wrap;background:#eee;padding:16px}#auth{margin-top:20px}</style>
+<script defer crossorigin="anonymous" src="__ISSUER__/npm/@clerk/ui@1/dist/ui.browser.js"></script>
+<script defer crossorigin="anonymous" data-clerk-publishable-key="__KEY__" src="__ISSUER__/npm/@clerk/clerk-js@6/dist/clerk.browser.js"></script>
+</head><body>
+<h1>News Daily live verification</h1>
+<p>Local Python API • Clerk development instance • Stripe test mode • SQLite only</p>
+<p id="session">Loading Clerk…</p><div id="avatar"></div><div id="auth"></div>
+<section id="actions" hidden>
+<button id="verify">Verify Python session and plan</button>
+<button id="checkout">Start Stripe test checkout</button>
+<button id="portal">Open Stripe test portal</button>
+<button id="signout">Sign out</button>
+</section>
+<pre id="result" role="status">Waiting for sign-in.</pre>
+<script>
+window.addEventListener('load', async () => {
+  const output = document.getElementById('result');
+  try {
+    await Clerk.load({ui:{ClerkUI:window.__internal_ClerkUICtor},signInFallbackRedirectUrl:'/verify',signUpFallbackRedirectUrl:'/verify'});
+    if (!Clerk.isSignedIn) {
+      document.getElementById('session').textContent = 'Signed out';
+      Clerk.mountSignIn(document.getElementById('auth'));
+      return;
+    }
+    document.getElementById('session').textContent = 'Clerk browser session active';
+    document.getElementById('actions').hidden = false;
+    Clerk.mountUserButton(document.getElementById('avatar'));
+    async function request(path, body) {
+      const token = await Clerk.session.getToken();
+      const response = await fetch(path, {method:body?'POST':'GET',headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},...(body?{body:JSON.stringify(body)}:{})});
+      const data = await response.json();
+      if (!response.ok) throw new Error(`HTTP ${response.status}: ${data.error || 'Request failed'}`);
+      return data;
+    }
+    async function verify() {
+      try {
+        const data = await request('/api/me');
+        output.textContent = JSON.stringify({authenticated:true,plan:data.subscription.plan,status:data.subscription.status},null,2);
+      } catch (error) { output.textContent = error.message; }
+    }
+    document.getElementById('verify').onclick = verify;
+    for (const kind of ['checkout','portal']) document.getElementById(kind).onclick = async () => {
+      try {
+        const data = await request(`/api/billing/${kind}`,{locale:'en'});
+        const target = new URL(data.url);
+        if (target.protocol !== 'https:' || !['checkout.stripe.com','billing.stripe.com'].includes(target.hostname)) throw new Error('Unexpected payment redirect');
+        location.assign(target.href);
+      } catch (error) { output.textContent = error.message; }
+    };
+    document.getElementById('signout').onclick = () => Clerk.signOut({redirectUrl:'/verify'});
+    await verify();
+  } catch (_) { output.textContent = 'Clerk initialization failed.'; }
+});
+</script></body></html>

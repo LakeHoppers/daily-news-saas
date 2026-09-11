@@ -452,3 +452,24 @@ improvements, not claims of identical TS behavior for every invalid request.
 See `verification/phase-3bcde.json` for aggregate checks and backend/README.md for
 reproduction commands. These implementation slices are shipped with the above
 live-verification gates explicitly outstanding, not labeled fully production-verified.
+
+### Live browser verification follow-up (2026-09-11)
+
+On the deployed English site, a fresh reserved Clerk test account completed sign-up
+(with human password entry), reached the authenticated Free-plan dashboard, signed
+out, and signed back in through the real Clerk UI. Privacy Policy links are live
+and their TODO was already marked complete. A cosmetic issue remains: Clerk's
+sign-in title says "My Application" rather than the product name.
+
+A separate loopback browser harness now loads real Clerk components, forwards the
+browser-issued token to the Python API, and starts Stripe CLI to forward real test
+webhooks. It filters the private snapshot to one reserved test account and drops
+all shared Stripe customer mappings. Missing/forged sessions returned HTTP 401 and
+the Stripe listener connected successfully. Successful Python browser authentication
+and completed checkout/webhook verification are still pending the local browser
+sign-in; this entry does not mark those two gates complete.
+
+Verification of the harness: 86 Python tests (including three live read-only Neon
+checks), 142 TS tests, Ruff check/format, lint, typecheck and production build passed.
+The private oracle test remains opt-in/skipped in the normal TS suite. No production
+scheduling, webhook endpoint configuration or Python write ownership changed.

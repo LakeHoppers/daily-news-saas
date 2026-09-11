@@ -131,3 +131,39 @@ New module structure retains application services with injected auth, state,
 Stripe and email ports. Local read/mutation verification is not a replacement for
 future Postgres write-adapter testing. See docs/PYTHON_MIGRATION.md for remaining
 browser-auth and vendor-delivery verification gates and deliberate contract differences.
+
+## Real browser + Stripe webhook verification
+
+`app.browser_verification` is an explicitly started, loopback-only test page. It
+loads real Clerk components and sends the browser's session token directly to the
+Python API; tokens are never rendered. It copies only the selected reserved Clerk
+test user into SQLite and discards production Stripe customer/subscription mappings.
+The default production/read API does not register this test page.
+
+1. In a live browser, sign up with a unique `+clerk_test@example.com` email, verify
+   with Clerk's development code `424242`, visit the production dashboard to provision
+   the test user, then sign out and back in. Enter passwords in the browser only.
+2. Create a fresh private snapshot using `scripts/python-phase3-snapshot.ts`.
+3. Install the official Stripe CLI at `~/.local/bin/stripe` (verify its release
+   artifact SHA-256). Use an existing Stripe test key from the private environment.
+4. From `backend/`, run:
+
+```sh
+.venv/bin/python -m app.browser_verification \
+  --snapshot /absolute/private/snapshot.json \
+  --directory /absolute/private/browser-verification \
+  --test-email your-unique-test+clerk_test@example.com
+```
+
+Open `http://localhost:8014/verify`, sign in, and use the session/checkout/portal
+buttons. The runner starts Stripe CLI forwarding real test events to the local
+webhook. Its signing secret is captured in memory; it does not overwrite `.env`
+or register/change a deployed webhook endpoint. The listener log and SQLite are
+private files outside Git. Keep the process running throughout checkout and the
+return redirect, then verify the local plan change and cancellation via the portal.
+No real card or live-mode key should be used. Stop with Ctrl-C after testing.
+
+A completed test requires observed browser login, a completed Stripe test checkout,
+a genuine forwarded webhook, and matching local subscription state—not merely a
+Checkout URL or a manually signed replay. The runner deliberately requires a
+reserved test account, and never makes Python the authoritative production writer.
