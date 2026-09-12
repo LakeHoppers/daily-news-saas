@@ -772,10 +772,13 @@ still pending (emailed 2026-09-09).
   exact email template, eight Stripe status mappings. Real Resend simulator and
   four Stripe event replays passed; all events were active, three had cancellation
   metadata. No newly completed checkout or terminal canceled event claimed.
-- [ ] Successful browser-issued Clerk JWT against protected Python HTTP remains
-  unverified. Backend API token lacked azp and was correctly rejected.
-- [ ] Before Phase 4: isolated Postgres write adapter, real webhook delivery/new
-  test checkout/terminal cancellation, durable event ordering and pipeline leases.
+- [x] Successful browser-issued Clerk JWT against protected Python HTTP verified
+  2026-09-12 after real browser signup/sign-in. Missing/forged tokens return 401.
+- [x] Newly completed Stripe sandbox checkout, genuine CLI-forwarded webhooks,
+  portal cancellation and terminal test cancellation verified 2026-09-12. Browser
+  states: FREE/ACTIVE → PRO/ACTIVE → FREE/CANCELED; four HTTP 200 webhook responses.
+- [ ] Before Phase 4: isolated Postgres write adapter, deployed Python endpoint
+  verification, durable event ordering and pipeline leases.
 
 Full implementation/verification boundaries and reproduction commands are in
 PYTHON_MIGRATION.md and backend/README.md. These are sandbox ports, not a production
@@ -785,3 +788,14 @@ Verification for this commit: 84 Python tests (including 3 live read-only Neon),
 142 TS tests plus the separately invoked private oracle, Ruff check/format, lint,
 typecheck and clean production build passed. Generated duplicate Next.js type files
 were moved outside the repo before rebuilding; no source change was needed.
+
+### Live auth/billing verification closed (2026-09-12)
+
+See `verification/phase-3-live-auth-billing.json` and PYTHON_MIGRATION.md for
+aggregate evidence. The new test subscription is canceled and its test account
+email delivery is paused. No existing subscriber or production scheduling changed.
+Clerk still displays the cosmetic title "My Application"; renaming that is separate.
+
+GitHub connector still exposes only the personal installation and no LakeHoppers
+repository listing. CLI access/push works; connector access is not a development
+blocker, and its state does not establish whether an org owner has approved it.

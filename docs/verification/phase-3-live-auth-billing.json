@@ -1,0 +1,58 @@
+{
+  "date": "2026-09-12",
+  "productionBrowserSignup": true,
+  "productionBrowserSignoutAndFreshSignin": true,
+  "pythonBrowserJwtVerified": true,
+  "pythonUnauthorizedAndForgedRequests": 401,
+  "stripeCheckoutCompleted": true,
+  "stripePaymentStatus": "paid",
+  "stripeLiveMode": false,
+  "portalScheduledCancellationVerified": true,
+  "terminalCancellationVia": "Stripe test API; only the newly created subscription",
+  "realEventTypes": [
+    "customer.subscription.created",
+    "customer.subscription.deleted",
+    "customer.subscription.updated",
+    "customer.subscription.updated"
+  ],
+  "webhookHttpStatuses": [
+    "200",
+    "200",
+    "200",
+    "200"
+  ],
+  "observedBrowserStates": [
+    "FREE/ACTIVE",
+    "PRO/ACTIVE",
+    "FREE/CANCELED"
+  ],
+  "finalLocalPlan": "FREE",
+  "finalLocalStatus": "CANCELED",
+  "billingPeriodEndStored": true,
+  "transport": "Stripe CLI live event forwarding to loopback Python webhook; CLI signing secret; not manual replay",
+  "pythonAuthoritativeWrites": false,
+  "schedulerChanges": false,
+  "deployedWebhookConfigurationChanged": false,
+  "testAccountEmailPaused": true,
+  "qualifications": [
+    "Clerk development instance and Stripe sandbox, not real-money billing.",
+    "Normal portal cancellation preserves Pro until period end. Terminal canceled event was generated separately through the test API.",
+    "Local SQLite subscription adapter; production Postgres write adapter and deployed Python cutover remain separate."
+  ],
+  "checks": {
+    "pythonPassed": 86,
+    "pythonLiveReadOnlyTests": 3,
+    "typescriptPassed": 142,
+    "privateOracleSkipped": 1,
+    "ruffCheck": "passed",
+    "ruffFormat": "passed",
+    "lint": "passed",
+    "typecheck": "passed",
+    "productionBuild": "passed"
+  },
+  "cleanup": {
+    "testSubscriptionCanceled": true,
+    "testUserEmailPaused": true,
+    "temporaryServerAndListenerStopped": true
+  }
+}

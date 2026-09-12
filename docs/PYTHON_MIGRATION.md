@@ -473,3 +473,52 @@ Verification of the harness: 86 Python tests (including three live read-only Neo
 checks), 142 TS tests, Ruff check/format, lint, typecheck and production build passed.
 The private oracle test remains opt-in/skipped in the normal TS suite. No production
 scheduling, webhook endpoint configuration or Python write ownership changed.
+
+
+### Live auth/billing gates closed (2026-09-12)
+
+This supersedes the pending browser/checkout verification notes above; historical
+reports retain their original results.
+
+- Real deployed-site signup, dashboard access, sign-out and fresh sign-in passed
+  with a reserved Clerk development test account and human-entered password.
+- The localhost browser used Clerk's actual session token to call Python `/api/me`.
+  Python's unchanged signature/issuer/origin/session checks accepted it and returned
+  FREE/ACTIVE. Missing and forged sessions returned HTTP 401; no auth bypass.
+- Python's authenticated Checkout route created a new Stripe sandbox session for
+  News Daily Pro, €4.99/month. The hosted browser checkout completed using Stripe's
+  documented test card. Stripe independently reported `complete` and `paid`, with
+  `livemode=false`. No real charge occurred.
+- Stripe CLI forwarded a genuine `customer.subscription.created` event to Python;
+  the signature was checked using the CLI listener's signing secret. SQLite and
+  the returning browser showed PRO/ACTIVE, including the billing-period end.
+- The Python-created Portal session completed cancellation in the real Stripe UI.
+  Normal cancellation is scheduled for the billing-period end (October 12), so
+  remaining PRO/ACTIVE at that stage was correct.
+- To also verify the terminal transition without waiting a month, only this new
+  disposable subscription was canceled immediately via Stripe's test API, after
+  checking its test-mode/customer/test-email mapping. The real deleted event reached
+  Python and the browser showed FREE/CANCELED. Four matching subscription events
+  (created, two updated, deleted) were delivered, all with HTTP 200 responses.
+
+This is live provider delivery through Stripe CLI, not locally fabricated event
+replay. It does not verify a future deployed FastAPI endpoint or a Postgres write
+adapter. No deployed webhook setting, scheduler or Python production ownership
+changed. The test account was provisioned by the existing TypeScript app; afterward
+its email preference was paused through a narrowly scoped TS/Prisma cleanup. No
+Python subscription/customer mapping was written to Neon and no existing customer
+subscription was modified. Private artifacts remain outside Git.
+
+Aggregate evidence: `verification/phase-3-live-auth-billing.json`. Phase 4 still
+requires isolated Postgres mutation tests, deployed-backend verification, durable
+event ordering/reconciliation, leases and explicit ownership/scheduler cutover.
+
+Connector clarification: it still reports no LakeHoppers installation/repositories,
+but authenticated GitHub CLI repository access and push permission work. The
+connector failure affects that integration's operations only, not current Git-based
+development. It cannot establish an org owner's approval status by itself.
+
+Final checks: 86 Python tests (3 live read-only), 142 TS tests, Ruff, lint,
+typecheck and production build passed. Duplicate generated Next.js type files
+recurred locally; the old cache was preserved outside the repo and a clean build
+resolved the check. The temporary Python server/Stripe listener were stopped.
