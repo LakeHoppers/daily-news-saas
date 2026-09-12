@@ -730,10 +730,10 @@ provider directly (see sources in chat, not just general knowledge):
 
 - [x] **Neon** (database): EU — Frankfurt (`eu-central-1`, AWS). Confirmed from
   our own connection string. No action needed.
-- [ ] **Vercel** (app/API servers): currently **US** (`iad1`, Vercel's default
-  for all new projects). Fixable and cheap: Hobby plan allows a single custom
-  region (just not multiple) — add `"regions": ["fra1"]` to `vercel.json` to
-  move to Frankfurt. Not done yet — do this first when picking this back up.
+- [x] **Vercel** (app/API servers): was **US** (`iad1`, Vercel's default for
+  all new projects). Fixed by adding `"regions": ["fra1"]` to `vercel.json`
+  (Hobby plan allows one custom region). Deployed and live-verified via the
+  `x-vercel-id: fra1::...` response header (2026-09-11).
 - [x] **Resend** (email): confirmed via Resend's own GDPR page — data is
   **always** stored in the US regardless of sending region; no EU residency
   option exists at all. Emre explicitly decided this is fine (legal safeguards
